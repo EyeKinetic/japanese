@@ -162,6 +162,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Cloud Sync Refresh
+    window.addEventListener('store-ready', () => {
+        updateDashboardUI();
+        renderLessons();
+        if(document.getElementById('view-progress').classList.contains('active')) {
+            renderCharts();
+        }
+    });
+
     // Countdown Logic
     function updateCountdown() {
         // MEXT applications usually start in April/May. Let's aim for May 1, 2026.

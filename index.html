@@ -349,7 +349,7 @@
                         <div class="setting-group">
                             <div class="setting-info">
                                 <h3>Data Management</h3>
-                                <p>All data is stored purely on this device.</p>
+                                <p id="data-status">Syncing with Supabase Cloud...</p>
                             </div>
                             <div class="btn-group">
                                 <button class="btn btn-secondary">Export Backup (.json)</button>
@@ -375,6 +375,14 @@
     <div id="cursor-dot"></div>
     <div id="cursor-outline"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Configuration - Sensei, input your keys here
+        window.SUPABASE_CONFIG = {
+            url: '', // Example: 'https://xyz.supabase.co'
+            key: ''  // Your Anon Key
+        };
+    </script>
     <script src="js/data.js?v=2"></script>
     <script src="js/store.js?v=2"></script>
     <script src="js/app.js?v=2"></script>

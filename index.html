@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEXT 2027 N3 Master</title>
+    <!-- Fonts: Inter for UI, Noto Sans JP for Japanese text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="login-screen" class="login-overlay">
+        <div class="login-modal">
+            <span class="icon">🌸</span>
+            <h2>Welcome, Scholars.</h2>
+            <p>Select your profile. Time left until MEXT 2027: Limited.</p>
+            <div class="login-options">
+                <button class="btn btn-primary" id="login-shreyas">I am Shreyas</button>
+                <button class="btn btn-secondary" id="login-dushyant">I am Dushyant</button>
+            </div>
+            <p class="login-warning">Note: Only full dedication will result in N3 mastery. There is no room for excuses.</p>
+        </div>
+    </div>
+
+    <div id="app">
+        <!-- Sidebar / Bottom Nav -->
+        <nav class="nav-bar">
+            <div class="nav-logo">
+                <span class="icon">🌸</span>
+                <span class="logo-text">MEXT N3</span>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active" data-target="dashboard">
+                    <span class="icon">🏠</span>
+                    <span class="label">Dashboard</span>
+                </li>
+                <li class="nav-item" data-target="learn">
+                    <span class="icon">📖</span>
+                    <span class="label">Learn</span>
+                </li>
+                <li class="nav-item" data-target="practice">
+                    <span class="icon">✍️</span>
+                    <span class="label">Practice</span>
+                </li>
+                <li class="nav-item" data-target="tests">
+                    <span class="icon">📝</span>
+                    <span class="label">Tests</span>
+                </li>
+                <li class="nav-item" data-target="progress">
+                    <span class="icon">📊</span>
+                    <span class="label">Progress</span>
+                </li>
+                <li class="nav-item" data-target="settings">
+                    <span class="icon">⚙️</span>
+                    <span class="label">Settings</span>
+                </li>
+            </ul>
+            <div class="nav-profile">
+                <div class="profile-switcher" id="user-switcher">
+                    <div class="avatar">Me</div>
+                    <span class="user-name">Shrey</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1 id="view-title">Dashboard</h1>
+                <div class="header-actions">
+                    <div class="streak-badge">
+                        <span class="icon">🔥</span>
+                        <span id="streak-count">12</span>
+                    </div>
+                    <button class="theme-toggle" id="theme-toggle">🌙</button>
+                </div>
+            </header>
+
+            <div class="view-container">
+                <!-- VIEW: Dashboard -->
+                <section id="view-dashboard" class="view active">
+                    <div class="dashboard-grid">
+                        <!-- MEXT Countdown -->
+                        <div class="card countdown-card">
+                            <div class="card-header">
+                                <h3>MEXT 2027 Countdown</h3>
+                                <span class="badge">Target N3</span>
+                            </div>
+                            <div class="countdown-display">
+                                <div class="time-block">
+                                    <span class="number" id="cd-days">--</span>
+                                    <span class="label">Days</span>
+                                </div>
+                                <div class="separator">:</div>
+                                <div class="time-block">
+                                    <span class="number" id="cd-hours">--</span>
+                                    <span class="label">Hours</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today's Lesson -->
+                        <div class="card lesson-card current-level-n5" id="dashboard-current-lesson">
+                            <div class="badge-level">Study Time</div>
+                            <h2 id="dash-lesson-title">Lesson 1: Loading...</h2>
+                            <p class="lesson-desc" id="dash-lesson-desc">Prepare yourself.</p>
+                            <div class="lesson-meta">
+                                <span><span class="icon">⏱️</span> 10 mins</span>
+                                <span><span class="icon">📚</span> Core</span>
+                            </div>
+                            <button class="btn btn-primary start-lesson-btn">Start Lesson</button>
+                        </div>
+
+                        <!-- Quick Friend Comparison -->
+                        <div class="card friend-card">
+                            <h3>Me vs Friend</h3>
+                            <div class="battle-bar-container">
+                                <div class="battle-bar">
+                                    <div class="battle-fill me" style="width: 55%;">Shrey (55%)</div>
+                                    <div class="battle-fill friend" style="width: 45%;">Friend (45%)</div>
+                                </div>
+                            </div>
+                            <p class="battle-status">You are slightly ahead in JLPT N5 Vocabulary!</p>
+                        </div>
+
+                        <!-- Daily Quiz Quick Action -->
+                        <div class="card quiz-card">
+                            <h3>Daily Quiz Available</h3>
+                            <p>Review yesterday's grammar points.</p>
+                            <button class="btn btn-secondary">Take Quiz</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: Progress Report -->
+                <section id="view-progress" class="view">
+                    <div class="progress-grid">
+                        <!-- N3 Readiness Ring -->
+                        <div class="card readiness-card">
+                            <h3>N3 Readiness</h3>
+                            <div class="chart-container">
+                                <canvas id="readinessChart"></canvas>
+                                <div class="ring-center-text">
+                                    <span id="readiness-percent">0%</span>
+                                    <small>Ready</small>
+                                </div>
+                            </div>
+                            <p class="readiness-msg">Keep pushing! You're currently mastering N5.</p>
+                        </div>
+
+                        <!-- Detailed Progress Bars -->
+                        <div class="card details-card">
+                            <h3>Curriculum Mastery</h3>
+                            
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span>Vocabulary (N5-N3)</span>
+                                    <span>240 / 2050</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill vocab-fill" style="width: 12%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span>Kanji (N5-N3)</span>
+                                    <span>40 / 1050</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill kanji-fill" style="width: 4%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="progress-item">
+                                <div class="progress-header">
+                                    <span>Grammar Points</span>
+                                    <span>15 / 180</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill grammar-fill" style="width: 8%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Me vs Friend Comparison Chart -->
+                        <div class="card comparison-card">
+                            <h3>Accuracy Comparison</h3>
+                            <div class="chart-container" style="height: 250px;">
+                                <canvas id="comparisonChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Streak History -->
+                        <div class="card streak-card">
+                            <h3>Recent Activity</h3>
+                            <div class="activity-graph" id="activity-graph">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- VIEW: Learn -->
+                <section id="view-learn" class="view">
+                    <!-- Lesson Browser -->
+                    <div id="lesson-browser">
+                        <div class="view-header">
+                            <h2>Learning Path</h2>
+                            <p class="text-secondary">Complete lessons sequentially to unlock the next.</p>
+                        </div>
+                        <div class="lesson-list" id="lesson-list-container">
+                            <!-- JS will populate lessons here -->
+                        </div>
+                    </div>
+
+                    <!-- Active Lesson Viewer (Hidden by default) -->
+                    <div id="active-lesson-container" class="hidden">
+                        <div class="view-header flex-center-between">
+                            <button class="btn btn-secondary btn-sm" id="back-to-lessons">⬅ Back</button>
+                            <h2 id="active-lesson-title">Lesson X</h2>
+                            <div></div>
+                        </div>
+                        <ul class="vocab-list" id="active-lesson-vocab">
+                            <!-- JS will populate flashcards -->
+                        </ul>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary w-100" id="start-lesson-quiz-btn">Take Lesson Test</button>
+                        </div>
+                    </div>
+
+                    <!-- Lesson Quiz Hurdle (Hidden by default) -->
+                    <div id="lesson-quiz-view" class="hidden">
+                        <div class="view-header">
+                            <h2>Sensei's Hurdle</h2>
+                            <p class="text-secondary">Prove your mastery of all lessons so far.</p>
+                        </div>
+                        <div class="card quiz-card">
+                            <div id="quiz-question-container">
+                                <div class="quiz-question-header">
+                                    <span id="quiz-progress-text">Question 1/5</span>
+                                </div>
+                                <div class="quiz-main">
+                                    <h1 id="quiz-char-display" style="font-size: 5rem; margin: 2rem 0;">あ</h1>
+                                    <div class="quiz-options-grid" id="quiz-options">
+                                        <!-- JS will populate options -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                             <button class="btn btn-secondary w-100" id="abandon-quiz">Abandon Test (Sensei will remember this)</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: Practice -->
+                <section id="view-practice" class="view">
+                    <div class="dashboard-grid">
+                        <div class="card canvas-card">
+                            <h3>Writing Practice</h3>
+                            <p class="text-secondary">Draw Kanji "水" (Water)</p>
+                            <div class="canvas-container">
+                                <canvas id="writingCanvas" width="300" height="300"></canvas>
+                            </div>
+                            <div class="canvas-actions">
+                                <button class="btn btn-secondary" id="clearCanvas">Clear</button>
+                                <button class="btn btn-primary" id="checkCanvas">Submit</button>
+                            </div>
+                        </div>
+
+                        <div class="card dialog-card">
+                            <h3>Listening Drill (Text-Based)</h3>
+                            <p class="text-secondary">Read the conversation out loud to simulate dialogs.</p>
+                            <div class="chat-sim">
+                                <div class="chat-bubble left">
+                                    <div class="speaker">Yamada</div>
+                                    <div class="msg">すみません、駅はどこですか？</div>
+                                    <div class="translate">Excuse me, where is the station?</div>
+                                </div>
+                                <div class="chat-bubble right">
+                                    <div class="speaker">You</div>
+                                    <div class="msg">あそこですよ。</div>
+                                    <div class="translate">It's right over there.</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100">Next Scenario</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: Tests -->
+                <section id="view-tests" class="view">
+                    <div class="dashboard-grid">
+                        <div class="card quiz-card-feature N5">
+                            <span class="badge-level">Daily</span>
+                            <h2>Mini-Quiz</h2>
+                            <p>5-10 questions covering yesterday's material.</p>
+                            <button class="btn btn-primary">Start Daily Quiz</button>
+                        </div>
+
+                        <div class="card quiz-card-feature N4">
+                            <span class="badge-level" style="background:var(--color-n4)">Weekly</span>
+                            <h2>Mock Test</h2>
+                            <p>25 questions reviewing your full week of progress.</p>
+                            <button class="btn btn-primary" style="background-color:var(--color-n4)">Start Weekly Test</button>
+                        </div>
+
+                        <div class="card quiz-card-feature N3">
+                            <span class="badge-level" style="background:var(--color-n3)">Monthly</span>
+                            <h2>JLPT N5 Simulator</h2>
+                            <p>Full length N5 mock tracking real score mechanics.</p>
+                            <button class="btn btn-primary" style="background-color:var(--color-n3)">Take JLPT Mock</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: Settings -->
+                <section id="view-settings" class="view">
+                    <div class="card settings-card">
+                        <h2>Application Settings</h2>
+                        
+                        <div class="setting-group">
+                            <div class="setting-info">
+                                <h3>Smart Study Regimen</h3>
+                                <p>Reduce daily load automatically.</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-boards">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>Board Exam Weeks</span>
+                            </div>
+                            <div class="setting-control mt-2">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-jee">
+                                    <span class="slider"></span>
+                                </label>
+                                <span>JEE Main Sprint</span>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <div class="setting-info">
+                                <h3>Data Management</h3>
+                                <p>All data is stored purely on this device.</p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary">Export Backup (.json)</button>
+                                <button class="btn btn-secondary">Import Progress</button>
+                            </div>
+                            <button class="btn btn-danger mt-2">Reset All Data</button>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <div class="setting-info">
+                                <h3>About Expected Goals</h3>
+                                <p>MEXT uniquely values pure JLPT proficiency to demonstrate cultural commitment. Hitting solid N3 gives a decisive edge during your interview over simple academic merit.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom Animated Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-outline"></div>
+
+    <script src="js/data.js?v=2"></script>
+    <script src="js/store.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
+</body>
+</html>

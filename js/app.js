@@ -75,8 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Supabase UUIDs are always longer than simple names
         if (state.currentUser && state.currentUser.length > 20) {
             loginScreen.classList.add('hidden');
+            document.body.classList.remove('auth-mode');
         } else {
             loginScreen.classList.remove('hidden');
+            document.body.classList.add('auth-mode');
         }
     };
     checkSession();

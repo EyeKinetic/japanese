@@ -557,12 +557,15 @@ body, a, button, .clickable, .vocab-item, .nav-item {
 }
 
 /* Ensure normal cursor on login screen */
-.login-overlay, .login-overlay *, .login-overlay input, .login-overlay button {
+body.auth-mode, 
+body.auth-mode *, 
+body.auth-mode input, 
+body.auth-mode button {
     cursor: auto !important;
 }
 
 /* Hide shuriken glider when login screen is visible */
-body:has(.login-overlay:not(.hidden)) #cursor-glider {
+body.auth-mode #cursor-glider {
     display: none !important;
 }
 

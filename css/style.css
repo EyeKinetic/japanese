@@ -165,23 +165,6 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
 }
 
 /* Custom Cursor */
-#cursor-dot, #cursor-outline {
-    pointer-events: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    z-index: 10000;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-}
-
-#cursor-dot {
-    width: 8px;
-    height: 8px;
-    background-color: var(--accent-primary);
-}
-
 #cursor-glider {
     display: block; /* Base visibility */
 }

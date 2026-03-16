@@ -551,9 +551,19 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
     100% { transform: translate(-50%, -50%) scale(1) rotate(var(--rot, 0deg)); }
 }
 
-/* Hide default cursor on interactive areas */
+/* Hide default cursor on interactive areas EXCEPT login screen */
 body, a, button, .clickable, .vocab-item, .nav-item {
     cursor: none !important;
+}
+
+/* Ensure normal cursor on login screen */
+.login-overlay, .login-overlay *, .login-overlay input, .login-overlay button {
+    cursor: auto !important;
+}
+
+/* Hide shuriken glider when login screen is visible */
+body:has(.login-overlay:not(.hidden)) #cursor-glider {
+    display: none !important;
 }
 
 /* Chibi Pet Companions - Animated "Living" Sprites */

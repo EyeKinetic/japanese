@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dash-lesson-desc').textContent = currentLessonObj.desc;
         const lessonBtn = document.querySelector('.start-lesson-btn');
         if(activeUserList.currentLesson > LESSON_PLAN.length) {
-            lessonBtn.textContent = "N5 Mastery Achieved!";
+            lessonBtn.textContent = "N1 Mastery Achieved!";
             lessonBtn.disabled = true;
         } else {
             lessonBtn.textContent = "Start Lesson";
@@ -165,10 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Countdown Logic
     function updateCountdown() {
-        // MEXT applications usually start in April/May. Let's aim for May 1, 2026.
-        const targetDate = new Date('May 1, 2026 00:00:00').getTime();
-        const now = new Date().getTime();
-        const distance = targetDate - now;
+        // Target: next May 1st (Typical MEXT Application window)
+        const now = new Date();
+        let targetYear = now.getFullYear();
+        let targetDate = new Date(`May 1, ${targetYear} 00:00:00`).getTime();
+        
+        // If May 1st has passed this year, point to next year
+        if (now.getTime() > targetDate) {
+            targetYear++;
+            targetDate = new Date(`May 1, ${targetYear} 00:00:00`).getTime();
+        }
+        
+        const nowMs = now.getTime();
+        const distance = targetDate - nowMs;
 
         if (distance > 0) {
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -225,8 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const kanjiProg = (user.kanjiLearned / TOTAL_KANJI) * 100;
         const grammarProg = (user.grammarLearned / TOTAL_GRAMMAR) * 100;
         
-        const overallN3Readiness = Math.round((vocabProg * 0.4) + (kanjiProg * 0.3) + (grammarProg * 0.3));
-        document.getElementById('readiness-percent').textContent = `${overallN3Readiness}%`;
+        const overallN1Readiness = Math.round((vocabProg * 0.4) + (kanjiProg * 0.3) + (grammarProg * 0.3));
+        document.getElementById('readiness-percent').textContent = `${overallN1Readiness}%`;
 
         // Update Progress Bars
         document.querySelector('.vocab-fill').style.width = `${vocabProg}%`;

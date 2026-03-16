@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEXT 2027 N3 Master</title>
+    <title>MEXT Scholar Dojo</title>
     <!-- Fonts: Inter for UI, Noto Sans JP for Japanese text -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,12 +18,12 @@
         <div class="login-modal">
             <span class="icon">🌸</span>
             <h2>Welcome to the Global Dojo.</h2>
-            <p>Enter your given name to begin your MEXT 2027 journey. The world is watching.</p>
+            <p>Enter your given name to begin your MEXT journey. The world is watching.</p>
             <div class="login-options">
-                <input type="text" id="login-username" placeholder="Enter your name (e.g., Shreyas)" class="form-input" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; width: 100%; margin-bottom: 1rem; background: var(--bg-primary); color: var(--text-primary);">
+                <input type="text" id="login-username" placeholder="Enter your name" class="form-input" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; width: 100%; margin-bottom: 1rem; background: var(--bg-primary); color: var(--text-primary);">
                 <button class="btn btn-primary w-100" id="login-submit">Enter Dojo</button>
             </div>
-            <p class="login-warning">Note: Only full dedication will result in N3 mastery. There is no room for excuses.</p>
+            <p class="login-warning">Note: Consistent dedication is required for N1 mastery. There is no room for excuses.</p>
         </div>
     </div>
 
@@ -32,7 +32,7 @@
         <nav class="nav-bar">
             <div class="nav-logo">
                 <span class="icon">🌸</span>
-                <span class="logo-text">MEXT N3</span>
+                <span class="logo-text">MEXT Dojo</span>
             </div>
             <ul class="nav-links">
                 <li class="nav-item active" data-target="dashboard">
@@ -88,8 +88,8 @@
                         <!-- MEXT Countdown -->
                         <div class="card countdown-card">
                             <div class="card-header">
-                                <h3>MEXT 2027 Countdown</h3>
-                                <span class="badge">Target N3</span>
+                                <h3>MEXT Exam Countdown</h3>
+                                <span class="badge">Target N1</span>
                             </div>
                             <div class="countdown-display">
                                 <div class="time-block">
@@ -145,7 +145,7 @@
                     <div class="progress-grid">
                         <!-- N3 Readiness Ring -->
                         <div class="card readiness-card">
-                            <h3>N3 Readiness</h3>
+                            <h3>N1 Readiness</h3>
                             <div class="chart-container">
                                 <canvas id="readinessChart"></canvas>
                                 <div class="ring-center-text">
@@ -343,22 +343,12 @@
                         
                         <div class="setting-group">
                             <div class="setting-info">
-                                <h3>Smart Study Regimen</h3>
-                                <p>Reduce daily load automatically.</p>
+                                <h3>Theme Settings</h3>
+                                <p>Adjust the Dojo appearance.</p>
                             </div>
                             <div class="setting-control">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="toggle-boards">
-                                    <span class="slider"></span>
-                                </label>
-                                <span>Board Exam Weeks</span>
-                            </div>
-                            <div class="setting-control mt-2">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="toggle-jee">
-                                    <span class="slider"></span>
-                                </label>
-                                <span>JEE Main Sprint</span>
+                                <span>Dark Mode</span>
+                                <button class="theme-toggle" id="theme-toggle-settings" style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 5px 15px; border-radius: 5px; cursor: pointer;">🌙</button>
                             </div>
                         </div>
 
@@ -376,8 +366,8 @@
                         
                         <div class="setting-group">
                             <div class="setting-info">
-                                <h3>About Expected Goals</h3>
-                                <p>MEXT uniquely values pure JLPT proficiency to demonstrate cultural commitment. Hitting solid N3 gives a decisive edge during your interview over simple academic merit.</p>
+                                <h3>About MEXT Scholarship</h3>
+                                <p>The MEXT scholarship is a prestigious gateway to research and study in Japan. High JLPT proficiency (ideally N1 or N2) demonstrates cultural commitment and is a critical factor in the selection and interview process.</p>
                             </div>
                         </div>
                     </div>

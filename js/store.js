@@ -13,9 +13,7 @@ class AppStore {
             currentUser: null,
             profiles: {}, // Will be populated dynamically
             settings: {
-                darkMode: false,
-                boardExamsMode: false,
-                jeeSprintMode: false
+                darkMode: false
             }
         };
         this.init();

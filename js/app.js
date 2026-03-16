@@ -190,8 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    setInterval(updateCountdown, 1000 * 60 * 60); // update every hour
+    // Initialize real-time updates
     updateCountdown();
+    setInterval(updateCountdown, 1000);
 
     // 3. Activity Graph Mock
     function renderActivityGraph() {

@@ -21,12 +21,24 @@ const JLPT_DATA = {
         totalKanji: 650,
         totalGrammar: 70,
         color: "#eab308"
+    },
+    "N2": {
+        totalVocab: 1000,
+        totalKanji: 1000,
+        totalGrammar: 100,
+        color: "#10b981"
+    },
+    "N1": {
+        totalVocab: 1500,
+        totalKanji: 1200,
+        totalGrammar: 150,
+        color: "#f43f5e"
     }
 };
 
-const TOTAL_VOCAB = JLPT_DATA.N5.totalVocab + JLPT_DATA.N4.totalVocab + JLPT_DATA.N3.totalVocab;
-const TOTAL_KANJI = JLPT_DATA.N5.totalKanji + JLPT_DATA.N4.totalKanji + JLPT_DATA.N3.totalKanji;
-const TOTAL_GRAMMAR = JLPT_DATA.N5.totalGrammar + JLPT_DATA.N4.totalGrammar + JLPT_DATA.N3.totalGrammar;
+const TOTAL_VOCAB = JLPT_DATA.N5.totalVocab + JLPT_DATA.N4.totalVocab + JLPT_DATA.N3.totalVocab + JLPT_DATA.N2.totalVocab + JLPT_DATA.N1.totalVocab;
+const TOTAL_KANJI = JLPT_DATA.N5.totalKanji + JLPT_DATA.N4.totalKanji + JLPT_DATA.N3.totalKanji + JLPT_DATA.N2.totalKanji + JLPT_DATA.N1.totalKanji;
+const TOTAL_GRAMMAR = JLPT_DATA.N5.totalGrammar + JLPT_DATA.N4.totalGrammar + JLPT_DATA.N3.totalGrammar + JLPT_DATA.N2.totalGrammar + JLPT_DATA.N1.totalGrammar;
 
 const LESSON_PLAN = [
     // --- N5 FOUNDATIONS (HIRAGANA) ---
@@ -281,6 +293,168 @@ const LESSON_PLAN = [
         desc: "Summation of all core patterns.",
         vocab: [
             { jp: "せいこう", roma: "seikou", env: "n3" }, { jp: "どりょく", roma: "doryoku", env: "n3" }, { jp: "ごうかく", roma: "goukaku", env: "n3" }
+        ]
+    },
+    // --- N2 ADVANCED PATH ---
+    {
+        id: 31,
+        title: "N2 Kanji: Industry",
+        desc: "Manufacturing, agriculture, production.",
+        vocab: [
+            { jp: "製", roma: "sei", env: "kanji" }, { jp: "造", roma: "zou", env: "kanji" }, { jp: "農", roma: "nou", env: "kanji" }, { jp: "産", roma: "san", env: "kanji" }
+        ]
+    },
+    {
+        id: 32,
+        title: "N2 Kanji: Law & Crime",
+        desc: "Police, court, judge, prison.",
+        vocab: [
+            { jp: "警", roma: "kei", env: "kanji" }, { jp: "判", roma: "han", env: "kanji" }, { jp: "罪", roma: "zai", env: "kanji" }, { jp: "罰", roma: "batsu", env: "kanji" }
+        ]
+    },
+    {
+        id: 33,
+        title: "N2 Grammar: Cause & Effect",
+        desc: "ue ni, kara ni wa, dake ni.",
+        vocab: [
+            { jp: "うえに", roma: "ue ni", env: "grammar" }, { jp: "からには", roma: "kara ni wa", env: "grammar" }
+        ]
+    },
+    {
+        id: 34,
+        title: "N2 Vocab: Economy",
+        desc: "Inflation, stock market, currency.",
+        vocab: [
+            { jp: "インフレ", roma: "infure", env: "biz" }, { jp: "かぶしき", roma: "kabushiki", env: "biz" }, { jp: "かわせ", roma: "kawase", env: "biz" }
+        ]
+    },
+    {
+        id: 35,
+        title: "N2 Kanji: Psychology",
+        desc: "Conscious, unconscious, instinct.",
+        vocab: [
+            { jp: "意", roma: "i", env: "kanji" }, { jp: "識", roma: "shiki", env: "kanji" }, { jp: "本", roma: "hon", env: "kanji" }, { jp: "能", roma: "nou", env: "kanji" }
+        ]
+    },
+    {
+        id: 36,
+        title: "N2 Grammar: Expectations",
+        desc: "hazu da, wake da, tsumori da.",
+        vocab: [
+            { jp: "はずだ", roma: "hazu da", env: "grammar" }, { jp: "わけだ", roma: "wake da", env: "grammar" }
+        ]
+    },
+    {
+        id: 37,
+        title: "N2 Vocab: Environment",
+        desc: "Pollution, recycling, ecosystem.",
+        vocab: [
+            { jp: "おせん", roma: "osen", env: "nature" }, { jp: "さいせい", roma: "saisei", env: "nature" }, { jp: "せいしん", roma: "seishin", env: "nature" }
+        ]
+    },
+    {
+        id: 38,
+        title: "N2 Kanji: Science",
+        desc: "Experiment, research, conclusion.",
+        vocab: [
+            { jp: "実", roma: "jitsu", env: "kanji" }, { jp: "験", roma: "ken", env: "kanji" }, { jp: "研", roma: "ken", env: "kanji" }, { jp: "究", roma: "kyuu", env: "kanji" }
+        ]
+    },
+    {
+        id: 39,
+        title: "N2 Expressions: Formal",
+        desc: "Itashimasu, Gozaimasu.",
+        vocab: [
+            { jp: "いたします", roma: "itashimasu", env: "keigo" }, { jp: "ございます", roma: "gozaimasu", env: "keigo" }
+        ]
+    },
+    {
+        id: 40,
+        title: "N2 Milestone Review",
+        desc: "Crossing the bridge to N1.",
+        vocab: [
+            { jp: "ちょうせん", roma: "chousen", env: "n2" }, { jp: "こくふく", roma: "kokufuku", env: "n2" }, { jp: "はってん", roma: "hatten", env: "n2" }
+        ]
+    },
+    // --- N1 EXPERT PATH ---
+    {
+        id: 41,
+        title: "N1 Kanji: Archaic Concepts",
+        desc: "Ritual, tradition, heritage.",
+        vocab: [
+            { jp: "儀", roma: "gi", env: "kanji" }, { jp: "伝", roma: "den", env: "kanji" }, { jp: "承", roma: "shou", env: "kanji" }, { jp: "継", roma: "kei", env: "kanji" }
+        ]
+    },
+    {
+        id: 42,
+        title: "N1 Kanji: Complex Emotions",
+        desc: "Melancholy, aesthetic, nostalgia.",
+        vocab: [
+            { jp: "愁", roma: "shuu", env: "kanji" }, { jp: "美", roma: "bi", env: "kanji" }, { jp: "懐", roma: "kai", env: "kanji" }
+        ]
+    },
+    {
+        id: 43,
+        title: "N1 Grammar: Classical Carryovers",
+        desc: "beshi, nari, gotoshi.",
+        vocab: [
+            { jp: "べし", roma: "beshi", env: "classical" }, { jp: "なり", roma: "nari", env: "classical" }, { jp: "ごとし", roma: "gotoshi", env: "classical" }
+        ]
+    },
+    {
+        id: 44,
+        title: "N1 Vocab: Advanced Philosophy",
+        desc: "Existentialism, ethics, logic.",
+        vocab: [
+            { jp: "じつぞん", roma: "jitsuzon", env: "philosophy" }, { jp: "りんり", roma: "rinri", env: "philosophy" }, { jp: "ろんり", roma: "ronri", env: "philosophy" }
+        ]
+    },
+    {
+        id: 45,
+        title: "N1 Kanji: Global Politics",
+        desc: "Treaty, sovereignty, alliance.",
+        vocab: [
+            { jp: "条", roma: "jou", env: "kanji" }, { jp: "約", roma: "yaku", env: "kanji" }, { jp: "主", roma: "shu", env: "kanji" }, { jp: "権", roma: "ken", env: "kanji" }
+        ]
+    },
+    {
+        id: 46,
+        title: "N1 Grammar: Subtle Nuance",
+        desc: "o kawa kiri ni, o motte, nari ni.",
+        vocab: [
+            { jp: "をかわきりに", roma: "o kawa kiri ni", env: "grammar" }, { jp: "をもって", roma: "o motte", env: "grammar" }
+        ]
+    },
+    {
+        id: 47,
+        title: "N1 Vocab: Literature & Prose",
+        desc: "Metaphor, rhythm, narrative.",
+        vocab: [
+            { jp: "ひゆ", roma: "hiyu", env: "lit" }, { jp: "いんりつ", roma: "inritsu", env: "lit" }, { jp: "じょじつ", roma: "jojitsu", env: "lit" }
+        ]
+    },
+    {
+        id: 48,
+        title: "N1 Kanji: Abstract Systems",
+        desc: "Structure, mechanism, function.",
+        vocab: [
+            { jp: "構", roma: "kou", env: "kanji" }, { jp: "造", roma: "zou", env: "kanji" }, { jp: "機", roma: "ki", env: "kanji" }, { jp: "能", roma: "nou", env: "kanji" }
+        ]
+    },
+    {
+        id: 49,
+        title: "N1 Honorifics: Keigo Mastery",
+        desc: "Humble vs Honorific peak.",
+        vocab: [
+            { jp: "おっしゃる", roma: "ossharu", env: "sonkeigo" }, { jp: "いたす", roma: "itasu", env: "kenjougo" }, { jp: "まいる", roma: "mairu", env: "kenjougo" }
+        ]
+    },
+    {
+        id: 50,
+        title: "The Scholar's Apex: N1 Mastery",
+        desc: "The final step to complete fluency.",
+        vocab: [
+            { jp: "かんぺき", roma: "kanpeki", env: "n1" }, { jp: "とうたつ", roma: "toutatsu", env: "n1" }, { jp: "えいかん", roma: "eikan", env: "n1" }
         ]
     }
 ];

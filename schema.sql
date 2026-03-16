@@ -1,9 +1,9 @@
 -- schema.sql
 -- Run this in the Supabase SQL Editor to set up your progression database.
 
--- 1. Create the profiles table
+-- 1. Create the profiles table (idempotent)
 CREATE TABLE IF NOT EXISTS public.profiles (
-    id TEXT PRIMARY KEY, -- 'shreyas' or 'dushyant'
+    id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     level TEXT DEFAULT 'N5',
     streak INTEGER DEFAULT 0,
@@ -17,15 +17,19 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Ensure new columns exist if the table was created previously
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS quizzes_taken INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS quiz_accuracy NUMERIC DEFAULT 0;
+
 -- 2. No default profiles inserted.
 -- The app will dynamically create profiles when users enter their given name.
 
 -- 3. Enabling Row Level Security (RLS)
--- For a learning project, we can allow public access for simplicity, 
--- or you can secure it later with Auth.
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow everyone to read and update (for dev purposes)
+-- DROP first to avoid "already exists" errors
+DROP POLICY IF EXISTS "Public Read/Write" ON public.profiles;
 CREATE POLICY "Public Read/Write" ON public.profiles
     FOR ALL
     USING (true)

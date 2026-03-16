@@ -4,37 +4,83 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 0. Login & Data Management logic
-    const lsData = localStorage.getItem('mext_jp_app_data');
-    if (lsData && lsData.includes('"me"')) {
-        // Purge old structure to avoid breaking state with shreyas/dushyant update
-        localStorage.removeItem('mext_jp_app_data');
-        location.reload(); 
-        return;
-    }
+    // 0. Force Migration to Secure Auth by purging old keys
+    const legacyKeys = ['mext_jp_app_data', 'mext_jp_app_v2', 'mext_jp_app_v3'];
+    legacyKeys.forEach(k => {
+        if (localStorage.getItem(k)) {
+            localStorage.removeItem(k);
+            location.reload(); 
+        }
+    });
 
     const loginScreen = document.getElementById('login-screen');
-    const loggedIn = sessionStorage.getItem('login_session');
+    const authToggleBtn = document.getElementById('auth-toggle-btn');
+    const loginTitle = document.getElementById('login-title');
+    const loginDesc = document.getElementById('login-desc');
+    const submitBtn = document.getElementById('login-submit');
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    const usernameContainer = document.getElementById('username-field-container');
+    const registerUsernameInput = document.getElementById('register-username');
 
-    if (!loggedIn) {
-        loginScreen.classList.remove('hidden');
-        const submitBtn = document.getElementById('login-submit');
-        if(submitBtn) {
-            submitBtn.addEventListener('click', () => {
-                const usernameInput = document.getElementById('login-username').value.trim();
-                if(!usernameInput) {
-                    alert("Sensei, a name is required.");
+    let isRegisterMode = false;
+
+    if (authToggleBtn) {
+        authToggleBtn.addEventListener('click', () => {
+            isRegisterMode = !isRegisterMode;
+            loginTitle.textContent = isRegisterMode ? 'Scholar Registration' : 'Global Dojo Access';
+            loginDesc.textContent = isRegisterMode ? 'Create your credentials to begin training.' : 'Secure your path to N1. Authenticate to sync your progress.';
+            submitBtn.textContent = isRegisterMode ? 'Create Account' : 'Login';
+            authToggleBtn.textContent = isRegisterMode ? 'Back to Login' : 'Sign Up';
+            usernameContainer.classList.toggle('hidden', !isRegisterMode);
+        });
+    }
+
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!email || !password) {
+                showSenseiMessage("Credentials required, scholar.", "error");
+                return;
+            }
+
+            let result;
+            if (isRegisterMode) {
+                const username = registerUsernameInput.value.trim();
+                if (!username) {
+                    showSenseiMessage("Choose a username for the scrolls.", "error");
                     return;
                 }
-                store.loginUser(usernameInput);
-                sessionStorage.setItem('login_session', 'true');
+                result = await store.register(email, password, username);
+            } else {
+                result = await store.login(email, password);
+            }
+
+            if (result.success) {
+                showSenseiMessage(isRegisterMode ? "Welcome to the Dojo, Scholar!" : "Authentication successful.", "success");
                 loginScreen.classList.add('hidden');
                 updateDashboardUI();
-            });
-        }
-    } else {
-        loginScreen.classList.add('hidden');
+                renderLessons();
+            } else {
+                showSenseiMessage(result.error, "error");
+            }
+        });
     }
+
+    // Check session on load - Ensure it's a Supabase UUID
+    const checkSession = async () => {
+        const state = store.getState();
+        // Supabase UUIDs are always longer than simple names
+        if (state.currentUser && state.currentUser.length > 20) {
+            loginScreen.classList.add('hidden');
+        } else {
+            loginScreen.classList.remove('hidden');
+        }
+    };
+    checkSession();
+
 
     const navItems = document.querySelectorAll('.nav-item');
     const views = document.querySelectorAll('.view');
@@ -118,10 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const state = store.getState();
         if(!state.currentUser || !state.profiles[state.currentUser]) return;
         const activeUserList = state.profiles[state.currentUser];
+        const displayName = activeUserList.username || activeUserList.name || 'Scholar';
         
-        userSwitcher.querySelector('.user-name').textContent = activeUserList.name;
-        userSwitcher.querySelector('.avatar').textContent = activeUserList.name.charAt(0).toUpperCase();
-        streakCount.textContent = activeUserList.streak;
+        userSwitcher.querySelector('.user-name').textContent = displayName;
+        userSwitcher.querySelector('.avatar').textContent = displayName.charAt(0).toUpperCase();
+        streakCount.textContent = activeUserList.streak || 0;
 
         // Update Dashboard Lesson Card
         const currentLessonObj = LESSON_PLAN.find(l => l.id === activeUserList.currentLesson) || LESSON_PLAN[LESSON_PLAN.length - 1];
@@ -655,16 +702,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (passed) {
             const state = store.getState();
-            const userLevel = state.profiles[state.currentUser].currentLesson;
+            const user = state.profiles[state.currentUser];
+            const newUserLevel = user.currentLesson + 1;
             
             store.updateProfile(state.currentUser, { 
-                currentLesson: userLevel + 1,
-                xp: state.profiles[state.currentUser].xp + 100, // Bonus for passing test
-                vocabLearned: state.profiles[state.currentUser].vocabLearned + 5
+                currentLesson: newUserLevel,
+                xp: user.xp + 100,
+                vocabLearned: user.vocabLearned + 5
             });
             
-            showSenseiMessage(`Impressive score: ${currentQuizScore}/5. You may proceed.`, 'success');
+            petSFX.playArigato();
+            showSenseiMessage(`Impressive! Score: ${currentQuizScore}/5. "Arigato" - Sensei`, 'success');
             
+            if (newUserLevel >= 6) {
+                setTimeout(() => showCitizenshipCertificate(user.username), 1000);
+            }
+
             setTimeout(() => {
                 lessonQuizView.classList.add('hidden');
                 lessonBrowser.classList.remove('hidden');
@@ -792,31 +845,6 @@ document.addEventListener('DOMContentLoaded', () => {
         testBtns[2].addEventListener('click', () => showSenseiMessage('JLPT Mock. This is a serious test, prepare your mind!', 'warning'));
     }
 
-    // Settings
-    const settingBtns = document.querySelectorAll('.settings-card .btn');
-    settingBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const txt = e.target.textContent;
-            if (txt.includes('Export')) {
-                const data = JSON.stringify(store.getState());
-                const blob = new Blob([data], {type: "application/json"});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = "mext_jp_backup.json";
-                a.click();
-                showSenseiMessage('Data exported securely. Don\'t lose it!', 'success');
-            } else if (txt.includes('Import')) {
-                showSenseiMessage('Data imported successfully. Welcome back to your studies!', 'success');
-            } else if (txt.includes('Reset')) {
-                if (confirm('Are you sure you want to erase all your hard work, gakusei? This cannot be undone.')) {
-                    localStorage.removeItem(store.storeKey);
-                    showSenseiMessage('Data reset. We start from zero. Gambari mashou!', 'error');
-                    setTimeout(() => location.reload(), 2000);
-                }
-            }
-        });
-    });
 
     // Initial render
     updateDashboardUI();
@@ -850,19 +878,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const velocity = Math.sqrt(dx * dx + dy * dy);
 
         // High-end smooth lerp
-        gliderX += dx * 0.12;
-        gliderY += dy * 0.12;
+        gliderX += dx * 0.15;
+        gliderY += dy * 0.15;
 
         // Spin based on movement speed
-        gliderRotate += velocity * 0.4;
+        gliderRotate += velocity * 0.5;
 
         cursorGlider.style.left = `${gliderX}px`;
         cursorGlider.style.top = `${gliderY}px`;
         cursorGlider.style.transform = `translate(-50%, -50%) rotate(${gliderRotate}deg)`;
+        
+        // Pass rotation to CSS for the pulse animation context
+        cursorGlider.style.setProperty('--rot', `${gliderRotate}deg`);
 
         requestAnimationFrame(animateCursor);
     }
     animateCursor();
+
+    // Click feedback for Shuriken
+    window.addEventListener('mousedown', () => {
+        cursorGlider.classList.add('clicking');
+    });
+    window.addEventListener('mouseup', () => {
+        // Remove after animation duration (0.3s)
+        setTimeout(() => cursorGlider.classList.remove('clicking'), 300);
+    });
+    window.addEventListener('touchstart', (e) => {
+        cursorGlider.classList.add('clicking');
+        if (e.touches[0]) updatePosition(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    window.addEventListener('touchend', () => {
+        setTimeout(() => cursorGlider.classList.remove('clicking'), 300);
+    });
 
     // Hover effects for glider
     const hoverables = 'a, button, .nav-item, .card, .clickable, .profile-switcher, .vocab-item';
@@ -917,6 +964,84 @@ document.addEventListener('DOMContentLoaded', () => {
         showSenseiMessage('You abandoned the hurdle. Sensei is disappointed.', 'warning');
     });
 
+    // --- Pet Audio Synthesizer (Since assets were forbidden) ---
+    class PetAudio {
+        constructor() {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        playBark() {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.1);
+        }
+
+        playMeow() {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.5);
+        }
+
+        playDash() {
+            const noise = this.ctx.createBufferSource();
+            const bufferLen = this.ctx.sampleRate * 0.2;
+            const buffer = this.ctx.createBuffer(1, bufferLen, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for(let i=0; i<bufferLen; i++) data[i] = Math.random() * 2 - 1;
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1000, this.ctx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.2);
+            noise.connect(filter);
+            filter.connect(this.ctx.destination);
+            noise.start();
+        }
+
+        playArigato() {
+            // "Arigato" Synthesized Voice Approximation
+            // 'A' - 'ri' - 'ga' - 'to'
+            const now = this.ctx.currentTime;
+            
+            const speak = (freq, start, dur, type='sine') => {
+                const osc = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, start);
+                osc.frequency.exponentialRampToValueAtTime(freq*0.8, start + dur);
+                g.gain.setValueAtTime(0.05, start);
+                g.gain.linearRampToValueAtTime(0, start + dur);
+                osc.connect(g);
+                g.connect(this.ctx.destination);
+                osc.start(start);
+                osc.stop(start + dur);
+            };
+
+            speak(300, now, 0.15);       // A
+            speak(450, now + 0.15, 0.1); // ri
+            speak(250, now + 0.25, 0.15); // ga
+            speak(200, now + 0.4, 0.3);  // to (long)
+        }
+    }
+
+    const petSFX = new PetAudio();
+
     // 14. "Chibi Sensei" Pet Sprite Manager
     class ChibiPetManager {
         constructor() {
@@ -937,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
         spawnPet() {
             const type = this.petTypes[Math.floor(Math.random() * this.petTypes.length)];
             const petEl = document.createElement('div');
-            petEl.className = 'chibi-pet';
+            petEl.className = 'chibi-pet walking';
             petEl.textContent = type.emoji;
 
             const img = new Image();
@@ -951,10 +1076,10 @@ document.addEventListener('DOMContentLoaded', () => {
             let x, y, dx, dy;
 
             switch(side) {
-                case 0: x = Math.random() * window.innerWidth; y = -50; dx = (Math.random()-0.5)*2; dy = Math.random()*2+1; break;
-                case 1: x = window.innerWidth + 50; y = Math.random() * window.innerHeight; dx = -(Math.random()*2+1); dy = (Math.random()-0.5)*2; break;
-                case 2: x = Math.random() * window.innerWidth; y = window.innerHeight + 50; dx = (Math.random()-0.5)*2; dy = -(Math.random()*2+1); break;
-                case 3: x = -50; y = Math.random() * window.innerHeight; dx = Math.random()*2+1; dy = (Math.random()-0.5)*2; break;
+                case 0: x = Math.random() * window.innerWidth; y = -50; dx = (Math.random()-0.5)*0.5; dy = Math.random()*0.5+0.25; break;
+                case 1: x = window.innerWidth + 50; y = Math.random() * window.innerHeight; dx = -(Math.random()*0.5+0.25); dy = (Math.random()-0.5)*0.5; break;
+                case 2: x = Math.random() * window.innerWidth; y = window.innerHeight + 50; dx = (Math.random()-0.5)*0.5; dy = -(Math.random()*0.5+0.25); break;
+                case 3: x = -50; y = Math.random() * window.innerHeight; dx = Math.random()*0.5+0.25; dy = (Math.random()-0.5)*0.5; break;
             }
 
             petEl.style.left = `${x}px`;
@@ -980,21 +1105,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const rand = Math.random();
             if (rand < 0.4) {
                 pet.behavior = 'cute';
-                pet.el.classList.add('acting-cute');
+                pet.el.className = 'chibi-pet acting-cute';
+                if(pet.id === 'dog') petSFX.playBark(); else petSFX.playMeow();
                 showSenseiMessage(`${pet.id === 'dog' ? 'Inu' : 'Neko'}-chan is acting cute! ✨`, 'info');
                 setTimeout(() => {
                     if (pet.active) {
-                        pet.el.classList.remove('acting-cute');
+                        pet.el.className = 'chibi-pet walking';
                         pet.behavior = 'walking';
                     }
                 }, 3000);
             } else {
                 pet.behavior = 'running';
-                pet.el.classList.add('running-away');
+                pet.el.className = 'chibi-pet running';
+                petSFX.playDash();
                 pet.active = false;
-                pet.dx *= 5; pet.dy *= 5;
+                pet.dx *= 12; pet.dy *= 12;
                 showSenseiMessage(`${pet.id === 'dog' ? 'Inu' : 'Neko'}-chan got shy! 💨`, 'info');
-                setTimeout(() => pet.el.remove(), 500);
+                setTimeout(() => {
+                    pet.el.classList.add('running-away');
+                    setTimeout(() => pet.el.remove(), 500);
+                }, 1000);
             }
         }
 
@@ -1005,10 +1135,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 pet.y += pet.dy;
                 pet.el.style.left = `${pet.x}px`;
                 pet.el.style.top = `${pet.y}px`;
-                if (pet.dx > 0) pet.el.style.transform = 'scaleX(-1)';
-                else pet.el.style.transform = 'scaleX(1)';
+                
+                const flip = pet.dx > 0 ? 'scaleX(-1)' : 'scaleX(1)';
+                // Maintain the animation while flipping
+                pet.el.style.transform = flip;
             }
-            if (pet.x < -100 || pet.x > window.innerWidth + 100 || pet.y < -100 || pet.y > window.innerHeight + 100) {
+            if (pet.x < -150 || pet.x > window.innerWidth + 150 || pet.y < -150 || pet.y > window.innerHeight + 150) {
                 pet.active = false;
                 pet.el.remove();
                 return;
@@ -1016,6 +1148,21 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(() => this.animatePet(pet));
         }
     }
+
+    // 15. N1 Reward Logic
+    function showCitizenshipCertificate(username) {
+        const modal = document.getElementById('citizenship-modal');
+        document.getElementById('cert-user-name').textContent = (username || 'Scholar').toUpperCase();
+        document.getElementById('cert-date').textContent = new Date().toLocaleDateString('ja-JP');
+        modal.classList.remove('hidden');
+        
+        // Bonus: confetti logic could go here if allowed, but we'll use CSS sakura
+        localStorage.setItem('mext_n1_citizenship', 'true');
+    }
+
+    document.getElementById('close-cert-btn')?.addEventListener('click', () => {
+        document.getElementById('citizenship-modal').classList.add('hidden');
+    });
 
     new ChibiPetManager();
 

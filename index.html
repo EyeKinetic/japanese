@@ -17,15 +17,27 @@
     <div id="login-screen" class="login-overlay">
         <div class="login-modal">
             <span class="icon">🌸</span>
-            <h2>Welcome to the Global Dojo.</h2>
-            <p>Enter your given name to begin your MEXT journey. The world is watching.</p>
-            <div class="login-options">
-                <input type="text" id="login-username" placeholder="Enter your name" class="form-input" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; width: 100%; margin-bottom: 1rem; background: var(--bg-primary); color: var(--text-primary);">
-                <button class="btn btn-primary w-100" id="login-submit">Enter Dojo</button>
+            <h2 id="login-title">Global Dojo Access</h2>
+            <p id="login-desc">Secure your path to N1. Authenticate to sync your progress.</p>
+            
+            <div id="auth-form" class="login-options">
+                <input type="text" id="login-email" placeholder="Email Address" class="form-input" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; width: 100%; margin-bottom: 0.5rem; background: var(--bg-primary); color: var(--text-primary);">
+                <input type="password" id="login-password" placeholder="Password" class="form-input" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; width: 100%; margin-bottom: 1rem; background: var(--bg-primary); color: var(--text-primary);">
+                
+                <div id="username-field-container" class="hidden">
+                    <input type="text" id="register-username" placeholder="Choose a Username" class="form-input" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; width: 100%; margin-bottom: 1rem; background: var(--bg-primary); color: var(--text-primary);">
+                </div>
+
+                <div class="auth-buttons" style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                    <button class="btn btn-primary w-100" id="login-submit">Login</button>
+                    <button class="btn btn-secondary w-100" id="auth-toggle-btn">Sign Up</button>
+                </div>
             </div>
+
             <p class="login-warning">Note: Consistent dedication is required for N1 mastery. There is no room for excuses.</p>
         </div>
     </div>
+
 
     <div id="app">
         <!-- Sidebar / Bottom Nav -->
@@ -62,8 +74,8 @@
             </ul>
             <div class="nav-profile">
                 <div class="profile-switcher" id="user-switcher">
-                    <div class="avatar">Me</div>
-                    <span class="user-name">Shrey</span>
+                    <div class="avatar">?</div>
+                    <span class="user-name">Guest</span>
                 </div>
             </div>
         </nav>
@@ -352,17 +364,6 @@
                             </div>
                         </div>
 
-                        <div class="setting-group">
-                            <div class="setting-info">
-                                <h3>Data Management</h3>
-                                <p id="data-status">Syncing with Supabase Cloud...</p>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn btn-secondary">Export Backup (.json)</button>
-                                <button class="btn btn-secondary">Import Progress</button>
-                            </div>
-                            <button class="btn btn-danger mt-2">Reset All Data</button>
-                        </div>
                         
                         <div class="setting-group">
                             <div class="setting-info">
@@ -388,6 +389,31 @@
             key: 'sb_publishable_wiLIXESoQJf4HYRKRFFaTQ_G89lPaQ9'
         };
     </script>
+    <!-- Citizenship Modal (N1 Reward) -->
+    <div id="citizenship-modal" class="modal-overlay hidden">
+        <div class="citizenship-card">
+            <div class="sakura-bg"></div>
+            <div class="cert-border">
+                <span class="cert-stamp">合</span>
+                <h1>CERTIFICATE OF CITIZENSHIP</h1>
+                <p class="jp-title">日本国名誉市民権</p>
+                <div class="cert-body">
+                    <p>This is to certify that the scholar</p>
+                    <h2 id="cert-user-name">SAMURAI</h2>
+                    <p>has successfully mastered the path to <strong>N1 Mastery</strong>.</p>
+                    <p>By the order of the MEXT Scholar Dojo, they are hereby granted Honorary Citizenship.</p>
+                </div>
+                <div class="cert-footer">
+                    <div class="seal">
+                        <span class="icon">⛩️</span>
+                    </div>
+                    <p class="date" id="cert-date">2026.03.16</p>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="close-cert-btn">Accept Honor</button>
+        </div>
+    </div>
+
     <script src="js/data.js?v=2"></script>
     <script src="js/store.js?v=2"></script>
     <script src="js/app.js?v=2"></script>

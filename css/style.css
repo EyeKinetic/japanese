@@ -486,16 +486,41 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
     width: 24px;
     height: 24px;
     background: #ef4444; /* Solid Blood Red */
-    /* Sharp 4-Pointed Shuriken Shape */
-    clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
-    pointer-events: none;
+    width: 28px;
+    height: 28px;
+    background: #ef4444; /* Blood red core */
     z-index: 10000;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s, height 0.3s, scale 0.3s;
+    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); /* Subtle glow for edge definition */
+    clip-path: polygon(50% 0%, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0% 50%, 35% 35%); /* Shuriken Shape */
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+    transition: width 0.3s, height 0.3s, scale 0.2s;
+    overflow: hidden;
+}
+
+/* Metallic Glimmer Sweep */
+#cursor-glider::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+        45deg,
+        transparent 45%,
+        rgba(255, 255, 255, 0.8) 50%,
+        transparent 55%
+    );
+    animation: shurikenGlimmer 3s infinite linear;
+    pointer-events: none;
+}
+
+@keyframes shurikenGlimmer {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(50%, 50%) rotate(360deg); }
 }
 
 /* White Core for Maximum Visibility */
@@ -505,14 +530,25 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
     height: 6px;
     background: #ffffff;
     border-radius: 50%;
-    box-shadow: 0 0 5px #ffffff;
+    box-shadow: 0 0 8px #ffffff;
+    z-index: 1;
 }
 
 #cursor-glider.active {
-    width: 36px;
-    height: 36px;
-    scale: 1.2;
-    background: #ff5f5f; /* Brighter on hover */
+    scale: 1.3;
+    background: #ff7676;
+    box-shadow: 0 0 25px rgba(255, 118, 118, 0.8);
+}
+
+/* Click Pulse Effect */
+#cursor-glider.clicking {
+    animation: clickPulse 0.3s ease-out;
+}
+
+@keyframes clickPulse {
+    0% { transform: translate(-50%, -50%) scale(1) rotate(var(--rot, 0deg)); }
+    50% { transform: translate(-50%, -50%) scale(0.6) rotate(var(--rot, 0deg)); }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(var(--rot, 0deg)); }
 }
 
 /* Hide default cursor on interactive areas */
@@ -520,23 +556,26 @@ body, a, button, .clickable, .vocab-item, .nav-item {
     cursor: none !important;
 }
 
-/* Chibi Pet Sprites */
+/* Chibi Pet Companions - Animated "Living" Sprites */
 .chibi-pet {
     position: fixed;
-    width: 40px;
-    height: 40px;
-    z-index: 9999;
-    cursor: pointer;
+    width: 48px;
+    height: 48px;
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: auto;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
-    user-select: none;
-    font-size: 30px; /* Fallback for emoji */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    cursor: pointer;
+    z-index: 9999;
+    image-rendering: auto;
+    transition: transform 0.2s ease-out;
+}
+
+.chibi-pet.walking {
+    animation: petWalk 0.8s infinite ease-in-out;
+}
+
+.chibi-pet.running {
+    animation: petRun 0.4s infinite linear;
 }
 
 .chibi-pet.acting-cute {
@@ -548,16 +587,21 @@ body, a, button, .clickable, .vocab-item, .nav-item {
     opacity: 0;
 }
 
-@keyframes actCute {
-    0% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.2) rotate(10deg); }
-    100% { transform: scale(1) rotate(-10deg); }
+@keyframes petWalk {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
 }
 
-@keyframes petWalk {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-    100% { transform: translateY(0); }
+@keyframes petRun {
+    0%, 100% { transform: translateY(0) scaleX(1) rotate(0deg); }
+    25% { transform: translateY(-12px) scaleX(1.2) rotate(15deg); }
+    75% { transform: translateY(-12px) scaleX(1.2) rotate(-15deg); }
+}
+
+@keyframes actCute {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.3) rotate(15deg); }
+    100% { transform: scale(1) rotate(-15deg); }
 }
 
 /* Battle Card */
@@ -1118,5 +1162,102 @@ body, a, button, .clickable, .vocab-item, .nav-item {
 [data-theme="dark"] .slider { background-color: var(--border-color); }
 input:checked + .slider { background-color: var(--color-n5); }
 input:checked + .slider:before { transform: translateX(22px); }
+
+
+/* Citizenship Certificate Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+}
+
+.citizenship-card {
+    background: #fff9f0; /* Parchment color */
+    padding: 3rem;
+    border-radius: 4px;
+    max-width: 600px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    text-align: center;
+    color: #2d2d2d;
+    overflow: hidden;
+    border: 10px double #c0a060;
+}
+
+.cert-border {
+    padding: 2rem;
+    border: 2px solid #c0a060;
+    position: relative;
+}
+
+.cert-stamp {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 60px; height: 60px;
+    border: 3px solid #ef4444;
+    color: #ef4444;
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transform: rotate(15deg);
+    opacity: 0.8;
+}
+
+.citizenship-card h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #8b0000;
+}
+
+.jp-title {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    letter-spacing: 5px;
+}
+
+.cert-body h2 {
+    font-size: 3rem;
+    margin: 1.5rem 0;
+    color: #2d2d2d;
+    border-bottom: 2px solid #2d2d2d;
+    display: inline-block;
+}
+
+.cert-footer {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.seal {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.sakura-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(circle, rgba(255,183,197,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: -1;
+    animation: flowSakura 20s linear infinite;
+}
+
+@keyframes flowSakura {
+    from { background-position: 0 0; }
+    to { background-position: 400px 800px; }
+}
 
 /* Finished Mobile-Only Refactor */

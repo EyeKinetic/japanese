@@ -1,36 +1,58 @@
 -- schema.sql
--- Run this in the Supabase SQL Editor to set up your progression database.
+-- FORCE REFRESH: This will ensure the schema is exactly as required for the new Auth system.
+-- Run this in the Supabase SQL Editor to fix "uuid = text" mismatch errors.
 
--- 1. Create the profiles table (idempotent)
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
+CREATE TABLE public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
+    username TEXT UNIQUE NOT NULL,
     level TEXT DEFAULT 'N5',
     streak INTEGER DEFAULT 0,
     vocab_learned INTEGER DEFAULT 0,
     kanji_learned INTEGER DEFAULT 0,
     grammar_learned INTEGER DEFAULT 0,
     quizzes_taken INTEGER DEFAULT 0,
-    quiz_accuracy NUMERIC DEFAULT 0,
+    quiz_accuracy NUMERIC DEFAULT 100,
     xp INTEGER DEFAULT 0,
     current_lesson INTEGER DEFAULT 1,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Ensure new columns exist if the table was created previously
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS quizzes_taken INTEGER DEFAULT 0;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS quiz_accuracy NUMERIC DEFAULT 0;
-
--- 2. No default profiles inserted.
--- The app will dynamically create profiles when users enter their given name.
-
--- 3. Enabling Row Level Security (RLS)
+-- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Policy: Allow everyone to read and update (for dev purposes)
--- DROP first to avoid "already exists" errors
-DROP POLICY IF EXISTS "Public Read/Write" ON public.profiles;
-CREATE POLICY "Public Read/Write" ON public.profiles
-    FOR ALL
-    USING (true)
-    WITH CHECK (true);
+-- 1. Users can view their own profile
+CREATE POLICY "Users can view own profile" ON public.profiles
+    FOR SELECT
+    USING (auth.uid() = id);
+
+-- 2. Users can update their own profile
+CREATE POLICY "Users can update own profile" ON public.profiles
+    FOR UPDATE
+    USING (auth.uid() = id);
+
+-- 3. Users can insert their own profile during signup
+CREATE POLICY "Users can insert own profile" ON public.profiles
+    FOR INSERT
+    WITH CHECK (auth.uid() = id);
+
+-- 4. Anyone can view usernames and XP for the leaderboard
+CREATE POLICY "Leaderboard visibility" ON public.profiles
+    FOR SELECT
+    USING (true);
+
+-- Trigger to handle updated_at
+CREATE OR REPLACE FUNCTION handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER tr_profiles_updated_at
+    BEFORE UPDATE ON public.profiles
+    FOR EACH ROW
+    EXECUTE PROCEDURE handle_updated_at();
+

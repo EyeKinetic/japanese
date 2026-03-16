@@ -551,22 +551,20 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
     100% { transform: translate(-50%, -50%) scale(1) rotate(var(--rot, 0deg)); }
 }
 
-/* Hide default cursor on interactive areas EXCEPT login screen */
-body, a, button, .clickable, .vocab-item, .nav-item {
+/* Hide default cursor only when NOT in auth-mode */
+body:not(.auth-mode), 
+body:not(.auth-mode) a, 
+body:not(.auth-mode) button, 
+body:not(.auth-mode) .clickable, 
+body:not(.auth-mode) .vocab-item, 
+body:not(.auth-mode) .nav-item {
     cursor: none !important;
 }
 
-/* Ensure normal cursor on login screen */
-body.auth-mode, 
-body.auth-mode *, 
-body.auth-mode input, 
-body.auth-mode button {
-    cursor: auto !important;
-}
-
-/* Hide shuriken glider when login screen is visible */
+/* Hide shuriken glider strictly when in auth-mode */
 body.auth-mode #cursor-glider {
     display: none !important;
+    pointer-events: none !important;
 }
 
 /* Chibi Pet Companions - Animated "Living" Sprites */

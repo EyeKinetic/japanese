@@ -832,11 +832,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let mouseY = 0;
     let gliderX = 0;
     let gliderY = 0;
-    let isHovering = false;
 
-    window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
+    const updatePosition = (clientX, clientY) => {
+        mouseX = clientX;
+        mouseY = clientY;
+    };
+
+    window.addEventListener('mousemove', (e) => updatePosition(e.clientX, e.clientY));
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches[0]) updatePosition(e.touches[0].clientX, e.touches[0].clientY);
     });
 
     function animateCursor() {
@@ -853,16 +857,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Hover effects for glider
     const hoverables = 'a, button, .nav-item, .card, .clickable, .profile-switcher, .vocab-item';
+    const setCursorActive = (active) => {
+        if (active) cursorGlider.classList.add('active');
+        else cursorGlider.classList.remove('active');
+    };
+
     document.addEventListener('mouseover', (e) => {
-        if (e.target.closest(hoverables)) {
-            cursorGlider.classList.add('active');
-        }
+        if (e.target.closest(hoverables)) setCursorActive(true);
     });
     document.addEventListener('mouseout', (e) => {
-        if (e.target.closest(hoverables)) {
-            cursorGlider.classList.remove('active');
-        }
+        if (e.target.closest(hoverables)) setCursorActive(false);
     });
+
+    // Mobile touch-start feedback
+    document.addEventListener('touchstart', (e) => {
+        if (e.target.closest(hoverables)) setCursorActive(true);
+        if (e.touches[0]) updatePosition(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    document.addEventListener('touchend', () => setCursorActive(false));
 
     // 13. "Tab-Sentry" Anti-Cheat Logic
     document.addEventListener('visibilitychange', () => {
@@ -895,6 +907,108 @@ document.addEventListener('DOMContentLoaded', () => {
         lessonBrowser.classList.remove('hidden');
         showSenseiMessage('You abandoned the hurdle. Sensei is disappointed.', 'warning');
     });
+
+    // 14. "Chibi Sensei" Pet Sprite Manager
+    class ChibiPetManager {
+        constructor() {
+            this.pets = [];
+            this.petTypes = [
+                { id: 'dog', emoji: '🐶', img: 'img/chibi_dog.png' },
+                { id: 'cat', emoji: '🐱', img: 'img/chibi_cat.png' }
+            ];
+            this.spawnInterval = 30000;
+            this.start();
+        }
+
+        start() {
+            setTimeout(() => this.spawnPet(), 5000);
+            setInterval(() => this.spawnPet(), this.spawnInterval);
+        }
+
+        spawnPet() {
+            const type = this.petTypes[Math.floor(Math.random() * this.petTypes.length)];
+            const petEl = document.createElement('div');
+            petEl.className = 'chibi-pet';
+            petEl.textContent = type.emoji;
+
+            const img = new Image();
+            img.src = type.img;
+            img.onload = () => {
+                petEl.style.backgroundImage = `url('${type.img}')`;
+                petEl.textContent = '';
+            };
+            
+            const side = Math.floor(Math.random() * 4);
+            let x, y, dx, dy;
+
+            switch(side) {
+                case 0: x = Math.random() * window.innerWidth; y = -50; dx = (Math.random()-0.5)*2; dy = Math.random()*2+1; break;
+                case 1: x = window.innerWidth + 50; y = Math.random() * window.innerHeight; dx = -(Math.random()*2+1); dy = (Math.random()-0.5)*2; break;
+                case 2: x = Math.random() * window.innerWidth; y = window.innerHeight + 50; dx = (Math.random()-0.5)*2; dy = -(Math.random()*2+1); break;
+                case 3: x = -50; y = Math.random() * window.innerHeight; dx = Math.random()*2+1; dy = (Math.random()-0.5)*2; break;
+            }
+
+            petEl.style.left = `${x}px`;
+            petEl.style.top = `${y}px`;
+            document.body.appendChild(petEl);
+
+            const pet = { id: type.id, el: petEl, x, y, dx, dy, active: true, behavior: 'walking' };
+            this.pets.push(pet);
+
+            const handleInteraction = (e) => {
+                e.preventDefault();
+                this.interactWithPet(pet);
+            };
+
+            petEl.addEventListener('click', handleInteraction);
+            petEl.addEventListener('touchstart', handleInteraction, { passive: false });
+
+            this.animatePet(pet);
+        }
+
+        interactWithPet(pet) {
+            if (!pet.active) return;
+            const rand = Math.random();
+            if (rand < 0.4) {
+                pet.behavior = 'cute';
+                pet.el.classList.add('acting-cute');
+                showSenseiMessage(`${pet.id === 'dog' ? 'Inu' : 'Neko'}-chan is acting cute! ✨`, 'info');
+                setTimeout(() => {
+                    if (pet.active) {
+                        pet.el.classList.remove('acting-cute');
+                        pet.behavior = 'walking';
+                    }
+                }, 3000);
+            } else {
+                pet.behavior = 'running';
+                pet.el.classList.add('running-away');
+                pet.active = false;
+                pet.dx *= 5; pet.dy *= 5;
+                showSenseiMessage(`${pet.id === 'dog' ? 'Inu' : 'Neko'}-chan got shy! 💨`, 'info');
+                setTimeout(() => pet.el.remove(), 500);
+            }
+        }
+
+        animatePet(pet) {
+            if (!pet.active && pet.behavior !== 'running') return;
+            if (pet.behavior === 'walking' || pet.behavior === 'running') {
+                pet.x += pet.dx;
+                pet.y += pet.dy;
+                pet.el.style.left = `${pet.x}px`;
+                pet.el.style.top = `${pet.y}px`;
+                if (pet.dx > 0) pet.el.style.transform = 'scaleX(-1)';
+                else pet.el.style.transform = 'scaleX(1)';
+            }
+            if (pet.x < -100 || pet.x > window.innerWidth + 100 || pet.y < -100 || pet.y > window.innerHeight + 100) {
+                pet.active = false;
+                pet.el.remove();
+                return;
+            }
+            requestAnimationFrame(() => this.animatePet(pet));
+        }
+    }
+
+    new ChibiPetManager();
 
 });
 

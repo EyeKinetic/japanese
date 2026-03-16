@@ -219,15 +219,22 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
 
     .main-content {
         margin-bottom: 70px;
+        padding: 0.75rem; /* Tighter padding for mobile */
+    }
+
+    /* Mobile Readiness Spacing */
+    .readiness-card {
         padding: 1rem;
     }
 
     #cursor-glider {
-        display: none; /* No custom cursor on touch devices */
+        display: block; /* Sensei wants it on mobile too */
+        width: 8px;
+        height: 8px;
     }
 
     body, a, button, .nav-item, input, select, textarea, .profile-switcher {
-        cursor: auto !important; /* Restore cursor on mobile */
+        cursor: none !important; 
     }
 }
 
@@ -471,32 +478,75 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
     margin-top: -1.5rem;
 }
 
-/* Premium Liquid Cursor */
+/* Premium Liquid Cursor - Refined "Glider" Aesthetic */
 #cursor-glider {
     position: fixed;
-    width: 20px;
-    height: 20px;
-    background: rgba(239, 68, 68, 0.4);
-    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    background: var(--primary-color);
+    border-radius: 4px; /* Soft-edged square/diamond for premium look */
+    rotate: 45deg;
     pointer-events: none;
     z-index: 10000;
     transform: translate(-50%, -50%);
-    backdrop-filter: blur(2px);
-    transition: width 0.3s, height 0.3s, background 0.3s, border-radius 0.3s, backdrop-filter 0.3s;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+    transition: width 0.3s, height 0.3s, background 0.3s, border-radius 0.3s, scale 0.3s, rotate 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 10px var(--primary-color);
 }
 
 #cursor-glider.active {
-    width: 60px;
-    height: 60px;
-    background: rgba(239, 68, 68, 0.15);
+    width: 45px;
+    height: 45px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1.5px solid var(--primary-color);
+    border-radius: 12px; /* Soft pill/square shape */
+    rotate: 0deg;
     backdrop-filter: blur(4px);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.3);
 }
 
 /* Hide default cursor on interactive areas */
-body, a, button, .clickable {
+body, a, button, .clickable, .vocab-item, .nav-item {
     cursor: none !important;
+}
+
+/* Chibi Pet Sprites */
+.chibi-pet {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    z-index: 9999;
+    cursor: pointer;
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: auto;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    user-select: none;
+    font-size: 30px; /* Fallback for emoji */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.chibi-pet.acting-cute {
+    animation: actCute 1.5s infinite alternate;
+}
+
+.chibi-pet.running-away {
+    transition: transform 0.5s ease-in, opacity 0.5s;
+    opacity: 0;
+}
+
+@keyframes actCute {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(-10deg); }
+}
+
+@keyframes petWalk {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
 }
 
 /* Battle Card */

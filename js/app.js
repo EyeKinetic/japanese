@@ -902,4 +902,136 @@ document.addEventListener('DOMContentLoaded', () => {
         showSenseiMessage('You abandoned the hurdle. Sensei is disappointed.', 'warning');
     });
 
+    // 14. "Chibi Sensei" Pet Sprite Manager
+    class ChibiPetManager {
+        constructor() {
+            this.pets = [];
+            this.petTypes = [
+                { id: 'dog', emoji: '🐶', img: 'img/chibi_dog.png' },
+                { id: 'cat', emoji: '🐱', img: 'img/chibi_cat.png' }
+            ];
+            this.spawnInterval = 30000; // Spawn every 30 seconds
+            this.start();
+        }
+
+        start() {
+            // Initial spawn
+            setTimeout(() => this.spawnPet(), 5000);
+            setInterval(() => this.spawnPet(), this.spawnInterval);
+        }
+
+        spawnPet() {
+            const type = this.petTypes[Math.floor(Math.random() * this.petTypes.length)];
+            const petEl = document.createElement('div');
+            petEl.className = 'chibi-pet';
+            
+            // Set emoji as fallback
+            petEl.textContent = type.emoji;
+
+            // Try to use image
+            const img = new Image();
+            img.src = type.img;
+            img.onload = () => {
+                petEl.style.backgroundImage = `url('${type.img}')`;
+                petEl.textContent = ''; // Clear emoji if image loads successfully
+            };
+            
+            // Random start position (top, bottom, left, or right)
+            const side = Math.floor(Math.random() * 4);
+            let x, y, dx, dy;
+
+            switch(side) {
+                case 0: // Top
+                    x = Math.random() * window.innerWidth;
+                    y = -50;
+                    dx = (Math.random() - 0.5) * 2;
+                    dy = Math.random() * 2 + 1;
+                    break;
+                case 1: // Right
+                    x = window.innerWidth + 50;
+                    y = Math.random() * window.innerHeight;
+                    dx = -(Math.random() * 2 + 1);
+                    dy = (Math.random() - 0.5) * 2;
+                    break;
+                case 2: // Bottom
+                    x = Math.random() * window.innerWidth;
+                    y = window.innerHeight + 50;
+                    dx = (Math.random() - 0.5) * 2;
+                    dy = -(Math.random() * 2 + 1);
+                    break;
+                case 3: // Left
+                    x = -50;
+                    y = Math.random() * window.innerHeight;
+                    dx = Math.random() * 2 + 1;
+                    dy = (Math.random() - 0.5) * 2;
+                    break;
+            }
+
+            petEl.style.left = `${x}px`;
+            petEl.style.top = `${y}px`;
+            document.body.appendChild(petEl);
+
+            const pet = { el: petEl, x, y, dx, dy, active: true, behavior: 'walking' };
+            this.pets.push(pet);
+
+            petEl.addEventListener('click', () => this.interactWithPet(pet));
+
+            this.animatePet(pet);
+        }
+
+        interactWithPet(pet) {
+            if (!pet.active) return;
+            
+            const rand = Math.random();
+            if (rand < 0.4) {
+                // Act Cute
+                pet.behavior = 'cute';
+                pet.el.classList.add('acting-cute');
+                showSenseiMessage(`${pet.el.textContent || 'Pet'} is acting cute! ✨`, 'info');
+                setTimeout(() => {
+                    if (pet.active) {
+                        pet.el.classList.remove('acting-cute');
+                        pet.behavior = 'walking';
+                    }
+                }, 3000);
+            } else {
+                // Run Away
+                pet.behavior = 'running';
+                pet.el.classList.add('running-away');
+                pet.active = false;
+                pet.dx *= 5; // Speed up
+                pet.dy *= 5;
+                showSenseiMessage(`${pet.el.textContent || 'Pet'} got shy and ran away! 💨`, 'info');
+                setTimeout(() => pet.el.remove(), 500);
+            }
+        }
+
+        animatePet(pet) {
+            if (!pet.active && pet.behavior !== 'running') return;
+
+            if (pet.behavior === 'walking' || pet.behavior === 'running') {
+                pet.x += pet.dx;
+                pet.y += pet.dy;
+                pet.el.style.left = `${pet.x}px`;
+                pet.el.style.top = `${pet.y}px`;
+
+                // Flip based on direction
+                if (pet.dx > 0) pet.el.style.transform = 'scaleX(-1)';
+                else pet.el.style.transform = 'scaleX(1)';
+            }
+
+            // Remove if off-screen
+            if (pet.x < -100 || pet.x > window.innerWidth + 100 || pet.y < -100 || pet.y > window.innerHeight + 100) {
+                pet.active = false;
+                pet.el.remove();
+                return;
+            }
+
+            requestAnimationFrame(() => this.animatePet(pet));
+        }
+    }
+
+    new ChibiPetManager();
+
 });
+

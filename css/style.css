@@ -212,6 +212,45 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
         border-top: 1px solid var(--border-color);
     }
 
+/* Chibi Pet Sprites */
+.chibi-pet {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    z-index: 9999;
+    cursor: pointer;
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: auto;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    user-select: none;
+    font-size: 30px; /* Fallback for emoji */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.chibi-pet.acting-cute {
+    animation: actCute 1.5s infinite alternate;
+}
+
+.chibi-pet.running-away {
+    transition: transform 0.5s ease-in, opacity 0.5s;
+    opacity: 0;
+}
+
+@keyframes actCute {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(-10deg); }
+}
+
+@keyframes petWalk {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
     .nav-logo, .nav-profile {
         display: none;
     }

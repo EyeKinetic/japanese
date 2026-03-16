@@ -228,9 +228,11 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
     }
 
     #cursor-glider {
-        display: block; /* Sensei wants it on mobile too */
-        width: 8px;
-        height: 8px;
+        display: block; 
+        width: 16px; /* Larger for mobile visibility */
+        height: 16px;
+        background: #ef4444;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
     }
 
     body, a, button, .nav-item, input, select, textarea, .profile-switcher {
@@ -478,30 +480,39 @@ a, button, .nav-item, input, select, textarea, .profile-switcher {
     margin-top: -1.5rem;
 }
 
-/* Premium Liquid Cursor - Refined "Glider" Aesthetic */
+/* Ultimate JP-Themed Cursor - "Shuriken Glider" */
 #cursor-glider {
     position: fixed;
-    width: 12px;
-    height: 12px;
-    background: var(--primary-color);
-    border-radius: 4px; /* Soft-edged square/diamond for premium look */
-    rotate: 45deg;
+    width: 24px;
+    height: 24px;
+    background: #ef4444; /* Solid Blood Red */
+    /* Sharp 4-Pointed Shuriken Shape */
+    clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
     pointer-events: none;
     z-index: 10000;
     transform: translate(-50%, -50%);
-    transition: width 0.3s, height 0.3s, background 0.3s, border-radius 0.3s, scale 0.3s, rotate 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 0 10px var(--primary-color);
+    transition: width 0.3s, height 0.3s, scale 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); /* Subtle glow for edge definition */
+}
+
+/* White Core for Maximum Visibility */
+#cursor-glider::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #ffffff;
 }
 
 #cursor-glider.active {
-    width: 45px;
-    height: 45px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1.5px solid var(--primary-color);
-    border-radius: 12px; /* Soft pill/square shape */
-    rotate: 0deg;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.3);
+    width: 36px;
+    height: 36px;
+    scale: 1.2;
+    background: #ff5f5f; /* Brighter on hover */
 }
 
 /* Hide default cursor on interactive areas */

@@ -832,6 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let mouseY = 0;
     let gliderX = 0;
     let gliderY = 0;
+    let gliderRotate = 0;
 
     const updatePosition = (clientX, clientY) => {
         mouseX = clientX;
@@ -844,12 +845,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function animateCursor() {
+        const dx = mouseX - gliderX;
+        const dy = mouseY - gliderY;
+        const velocity = Math.sqrt(dx * dx + dy * dy);
+
         // High-end smooth lerp
-        gliderX += (mouseX - gliderX) * 0.12;
-        gliderY += (mouseY - gliderY) * 0.12;
+        gliderX += dx * 0.12;
+        gliderY += dy * 0.12;
+
+        // Spin based on movement speed
+        gliderRotate += velocity * 0.4;
 
         cursorGlider.style.left = `${gliderX}px`;
         cursorGlider.style.top = `${gliderY}px`;
+        cursorGlider.style.transform = `translate(-50%, -50%) rotate(${gliderRotate}deg)`;
 
         requestAnimationFrame(animateCursor);
     }

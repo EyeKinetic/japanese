@@ -10,33 +10,8 @@ class AppStore {
         this.isCloudEnabled = false;
         
         this.defaultState = {
-            currentUser: 'shreyas',
-            profiles: {
-                shreyas: {
-                    name: 'Shreyas',
-                    level: 'N5',
-                    streak: 0,
-                    vocabLearned: 0,
-                    kanjiLearned: 0,
-                    grammarLearned: 0,
-                    quizzesTaken: 0,
-                    quizAccuracy: 0,
-                    xp: 0,
-                    currentLesson: 1
-                },
-                dushyant: {
-                    name: 'Dushyant',
-                    level: 'N5',
-                    streak: 0,
-                    vocabLearned: 0,
-                    kanjiLearned: 0,
-                    grammarLearned: 0,
-                    quizzesTaken: 0,
-                    quizAccuracy: 0,
-                    xp: 0,
-                    currentLesson: 1
-                }
-            },
+            currentUser: null,
+            profiles: {}, // Will be populated dynamically
             settings: {
                 darkMode: false,
                 boardExamsMode: false,
@@ -86,57 +61,45 @@ class AppStore {
         this.save(state);
     }
 
-    // --- Cloud Sync Logic ---
+    getLeaderboard() {
+        const state = this.getState();
+        const profiles = Object.values(state.profiles).map(p => ({
+            name: p.name,
+            level: p.level,
+            xp: p.xp
+        }));
+        // Sort by XP descending
+        return profiles.sort((a, b) => b.xp - a.xp);
+    }
 
-    async pushToCloud(state) {
-        if (!this.isCloudEnabled) return;
-
-        try {
-            const shreyas = state.profiles.shreyas;
-            const dushyant = state.profiles.dushyant;
-
-            // Map data to database column names (snake_case in SQL)
-            const payload = [
-                {
-                    id: 'shreyas',
-                    name: shreyas.name,
-                    level: shreyas.level,
-                    streak: shreyas.streak,
-                    vocab_learned: shreyas.vocabLearned,
-                    kanji_learned: shreyas.kanjiLearned,
-                    grammar_learned: shreyas.grammarLearned,
-                    xp: shreyas.xp,
-                    current_lesson: shreyas.currentLesson
-                },
-                {
-                    id: 'dushyant',
-                    name: dushyant.name,
-                    level: dushyant.level,
-                    streak: dushyant.streak,
-                    vocab_learned: dushyant.vocabLearned,
-                    kanji_learned: dushyant.kanjiLearned,
-                    grammar_learned: dushyant.grammarLearned,
-                    xp: dushyant.xp,
-                    current_lesson: dushyant.currentLesson
-                }
-            ];
-
-            const { error } = await this.supabase
-                .from('profiles')
-                .upsert(payload, { onConflict: 'id' });
-
-            if (error) throw error;
-            document.getElementById('data-status').textContent = "Synced with Supabase Cloud ✅";
-        } catch (err) {
-            console.error("Cloud sync failed:", err);
-            document.getElementById('data-status').textContent = "Cloud Sync Failed ❌";
+    loginUser(username) {
+        let state = this.getState();
+        const id = username.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        if (!state.profiles[id]) {
+            state.profiles[id] = {
+                name: username,
+                level: 'N5',
+                streak: 0,
+                vocabLearned: 0,
+                kanjiLearned: 0,
+                grammarLearned: 0,
+                quizzesTaken: 0,
+                quizAccuracy: 0,
+                xp: 0,
+                currentLesson: 1
+            };
         }
+        
+        state.currentUser = id;
+        this.save(state);
     }
 
     async pullFromCloud() {
-        if (!this.isCloudEnabled) return;
+        if (!this.isCloudEnabled || !this.supabase) return;
 
         try {
+            // Fetch ALL profiles for the global leaderboard
             const { data, error } = await this.supabase
                 .from('profiles')
                 .select('*');
@@ -144,36 +107,70 @@ class AppStore {
             if (error) throw error;
 
             if (data && data.length > 0) {
-                const state = this.getState();
-                data.forEach(dbProfile => {
-                    const id = dbProfile.id;
-                    if (state.profiles[id]) {
-                        state.profiles[id] = {
-                            ...state.profiles[id],
-                            name: dbProfile.name,
-                            level: dbProfile.level,
-                            streak: dbProfile.streak,
-                            vocabLearned: dbProfile.vocab_learned,
-                            kanjiLearned: dbProfile.kanji_learned,
-                            grammarLearned: dbProfile.grammar_learned,
-                            xp: dbProfile.xp,
-                            currentLesson: dbProfile.current_lesson
+                let state = this.getState();
+                let hasChanges = false;
+                
+                data.forEach(cloudProfile => {
+                    const localProfile = state.profiles[cloudProfile.id];
+                    // Overwrite local if cloud has more XP, or if local doesn't exist
+                    if (!localProfile || cloudProfile.xp >= localProfile.xp) {
+                        state.profiles[cloudProfile.id] = {
+                            name: cloudProfile.name,
+                            level: cloudProfile.level,
+                            streak: cloudProfile.streak,
+                            vocabLearned: cloudProfile.vocab_learned,
+                            kanjiLearned: cloudProfile.kanji_learned,
+                            grammarLearned: cloudProfile.grammar_learned,
+                            quizzesTaken: cloudProfile.quizzes_taken || 0,
+                            quizAccuracy: cloudProfile.quiz_accuracy || 0,
+                            xp: cloudProfile.xp,
+                            currentLesson: cloudProfile.current_lesson
                         };
+                        hasChanges = true;
                     }
                 });
-                localStorage.setItem(this.storeKey, JSON.stringify(state));
-                console.log("Sensei, local scrolls updated from the Cloud.");
+
+                if (hasChanges) {
+                    localStorage.setItem(this.storeKey, JSON.stringify(state));
+                    console.log("Global Leaderboard synced from Cloud Sentry.");
+                }
             }
         } catch (err) {
-            console.error("Cloud pull failed:", err);
+            console.error("Failed to pull from Cloud Sentry:", err);
         }
     }
 
-    toggleUser() {
-        const state = this.getState();
-        state.currentUser = state.currentUser === 'shreyas' ? 'dushyant' : 'shreyas';
-        this.save(state);
-        return state.currentUser;
+    async pushToCloud(state) {
+        if (!this.isCloudEnabled || !this.supabase || !state.currentUser) return;
+
+        try {
+            const userProfile = state.profiles[state.currentUser];
+            if (!userProfile) return;
+
+            const payload = {
+                id: state.currentUser,
+                name: userProfile.name,
+                level: userProfile.level,
+                streak: userProfile.streak,
+                vocab_learned: userProfile.vocabLearned,
+                kanji_learned: userProfile.kanjiLearned,
+                grammar_learned: userProfile.grammarLearned,
+                quizzes_taken: userProfile.quizzesTaken || 0,
+                quiz_accuracy: userProfile.quizAccuracy || 0,
+                xp: userProfile.xp,
+                current_lesson: userProfile.currentLesson,
+                updated_at: new Date().toISOString()
+            };
+
+            const { error } = await this.supabase
+                .from('profiles')
+                .upsert(payload, { onConflict: 'id' });
+
+            if (error) throw error;
+            console.log("User progress pushed to Cloud Sentry.");
+        } catch (err) {
+            console.error("Failed to push to Cloud Sentry:", err);
+        }
     }
 
     toggleTheme() {

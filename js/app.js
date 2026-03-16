@@ -18,22 +18,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!loggedIn) {
         loginScreen.classList.remove('hidden');
-        document.getElementById('login-shreyas').addEventListener('click', () => {
-            const state = store.getState();
-            state.currentUser = 'shreyas';
-            store.save(state);
-            sessionStorage.setItem('login_session', 'true');
-            loginScreen.classList.add('hidden');
-            updateDashboardUI();
-        });
-        document.getElementById('login-dushyant').addEventListener('click', () => {
-            const state = store.getState();
-            state.currentUser = 'dushyant';
-            store.save(state);
-            sessionStorage.setItem('login_session', 'true');
-            loginScreen.classList.add('hidden');
-            updateDashboardUI();
-        });
+        const submitBtn = document.getElementById('login-submit');
+        if(submitBtn) {
+            submitBtn.addEventListener('click', () => {
+                const usernameInput = document.getElementById('login-username').value.trim();
+                if(!usernameInput) {
+                    alert("Sensei, a name is required.");
+                    return;
+                }
+                store.loginUser(usernameInput);
+                sessionStorage.setItem('login_session', 'true');
+                loginScreen.classList.add('hidden');
+                updateDashboardUI();
+            });
+        }
     } else {
         loginScreen.classList.add('hidden');
     }
@@ -118,10 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const streakCount = document.getElementById('streak-count');
     function updateDashboardUI() {
         const state = store.getState();
+        if(!state.currentUser || !state.profiles[state.currentUser]) return;
         const activeUserList = state.profiles[state.currentUser];
         
         userSwitcher.querySelector('.user-name').textContent = activeUserList.name;
-        userSwitcher.querySelector('.avatar').textContent = activeUserList.name.charAt(0);
+        userSwitcher.querySelector('.avatar').textContent = activeUserList.name.charAt(0).toUpperCase();
         streakCount.textContent = activeUserList.streak;
 
         // Update Dashboard Lesson Card
@@ -137,30 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
             lessonBtn.disabled = false;
         }
 
-        // Update Battle Bar based on XP ratio
-        const shreyasXP = state.profiles.shreyas.xp;
-        const dushyantXP = state.profiles.dushyant.xp;
-        const totalXP = shreyasXP + dushyantXP;
-        const shreyPercent = totalXP === 0 ? 50 : Math.round((shreyasXP / totalXP) * 100);
-        const dushPercent = 100 - shreyPercent;
-
-        const battleFillMe = document.querySelector('.battle-fill.me');
-        const battleFillFriend = document.querySelector('.battle-fill.friend');
+        // Update Global Rank Quick View
+        const leaderboard = store.getLeaderboard();
+        const myRank = leaderboard.findIndex(p => p.name.toLowerCase() === activeUserList.name.toLowerCase()) + 1;
         
-        battleFillMe.style.width = `${shreyPercent}%`;
-        battleFillMe.textContent = `Shreyas (${shreyPercent}%)`;
-        
-        battleFillFriend.style.width = `${dushPercent}%`;
-        battleFillFriend.textContent = `Dushyant (${dushPercent}%)`;
-    }
-
-    userSwitcher.addEventListener('click', () => {
-        store.toggleUser();
-        updateDashboardUI();
-        if(document.getElementById('view-progress').classList.contains('active')) {
-             renderCharts();
+        const rankSpan = document.getElementById('my-global-rank');
+        if(rankSpan) {
+            rankSpan.textContent = `#${myRank > 0 ? myRank : '--'}`;
+            document.getElementById('my-total-xp').textContent = activeUserList.xp;
+            
+            if(myRank === 1) {
+                document.getElementById('rank-status-message').textContent = "You are the Top Scholar of the Dojo!";
+            } else if (myRank > 1) {
+                const nextTarget = leaderboard[myRank - 2];
+                document.getElementById('rank-status-message').textContent = `Targeting ${nextTarget.name} (#${myRank - 1})`;
+            }
         }
-    });
+    }
 
     // Cloud Sync Refresh
     window.addEventListener('store-ready', () => {
@@ -281,55 +273,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Me vs Friend Comparison Line Chart (Mock Data)
-        const cCtx = document.getElementById('comparisonChart');
-        if(comparisonChartInstance) comparisonChartInstance.destroy();
+        // Global Leaderboard Rendering
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        if(leaderboardBody) {
+            leaderboardBody.innerHTML = '';
+            const leaderboard = store.getLeaderboard();
+            
+            if(leaderboard.length === 0) {
+                leaderboardBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--text-secondary);">No scholars found.</td></tr>';
+            } else {
+                leaderboard.forEach((profile, index) => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--border-color)';
+                    
+                    // Highlight current user
+                    if (state.currentUser && profile.name.toLowerCase() === state.profiles[state.currentUser].name.toLowerCase()) {
+                        tr.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'; // subtle red tint for active user
+                    }
 
-        comparisonChartInstance = new Chart(cCtx, {
-            type: 'line',
-            data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                datasets: [
-                    {
-                        label: state.profiles.shreyas.name + ' Accuracy %',
-                        data: [70, 75, 82, state.profiles.shreyas.quizAccuracy],
-                        borderColor: n5Color,
-                        backgroundColor: "transparent",
-                        borderWidth: 3,
-                        tension: 0.4
-                    },
-                    {
-                        label: state.profiles.dushyant.name + ' Accuracy %',
-                        data: [60, 68, 79, state.profiles.dushyant.quizAccuracy],
-                        borderColor: n4Color,
-                        backgroundColor: "transparent",
-                        borderWidth: 3,
-                        strokeDash: [5, 5],
-                        tension: 0.4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: { color: textColor }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        grid: { color: gridColor },
-                        ticks: { color: textColor }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: textColor }
-                    }
-                }
+                    tr.innerHTML = `
+                        <td style="padding: 10px; font-weight: bold; color: ${index === 0 ? '#eab308' : 'var(--text-primary)'}">#${index + 1}</td>
+                        <td style="padding: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-n3); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                                    ${profile.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span style="font-weight: 500;">${profile.name}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 10px;"><span class="badge" style="background: var(--color-n5)">${profile.level}</span></td>
+                        <td style="padding: 10px; font-weight: bold; color: var(--color-n3);">${profile.xp}</td>
+                    `;
+                    leaderboardBody.appendChild(tr);
+                });
             }
-        });
+        }
     }
 
     // Canvas Drawing Logic
@@ -421,11 +399,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function playAudio(text) {
-        if ('speechSynthesis' in window) {
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'ja-JP';
-            msg.rate = 0.8;
-            window.speechSynthesis.speak(msg);
+        // High-Quality MP3 TTS Engine via Google Translate TTS
+        const audioUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=ja&q=${encodeURIComponent(text)}`;
+        const audio = new Audio(audioUrl);
+        audio.play().catch(e => {
+            console.warn("MP3 Audio failed, falling back to basic Synthesis", e);
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'ja-JP';
+                msg.rate = 0.8;
+                window.speechSynthesis.speak(msg);
+            }
+        });
+    }
+
+    function testPronunciation(expectedJapanese, btnElement) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            showSenseiMessage("Your browser does not support the Microphone Dojo. Use Chrome/Edge.", "error");
+            return;
+        }
+
+        const originalText = btnElement.textContent;
+        btnElement.textContent = "🎙️ Listening...";
+        btnElement.style.background = "#ef4444"; // recording red
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+            const speechResult = event.results[0][0].transcript.trim();
+            console.log("Heard:", speechResult, "Expected:", expectedJapanese);
+            
+            // Check if string contains or matches closely
+            if (speechResult.includes(expectedJapanese) || expectedJapanese.includes(speechResult) || expectedJapanese === speechResult) {
+                btnElement.textContent = "✅ Perfect!";
+                btnElement.style.background = "#22c55e";
+                playAudio("すごい"); // "Sugoi" (Amazing)
+            } else {
+                btnElement.textContent = "❌ Try Again";
+                btnElement.style.background = "#f59e0b";
+                showSenseiMessage(`I heard: "${speechResult}". Listen closely and try again.`, "warning");
+            }
+            
+            setTimeout(() => {
+                btnElement.textContent = originalText;
+                btnElement.style.background = "var(--color-n4)";
+            }, 3000);
+        };
+
+        recognition.onerror = (event) => {
+            console.error(event);
+            btnElement.textContent = "❌ Error";
+            btnElement.style.background = "#f59e0b";
+            showSenseiMessage("Mic error. Ensure permissions are granted.", "error");
+            setTimeout(() => {
+                btnElement.textContent = originalText;
+                btnElement.style.background = "var(--color-n4)";
+            }, 3000);
+        };
+
+        try {
+            recognition.start();
+        } catch(e) {
+            console.error("Speech recognition already started or blocked", e);
         }
     }
 
@@ -453,7 +492,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="v-meaning">${v.roma}</div>
                     </div>
                 </div>
-                <button class="btn btn-sm btn-flashcard">Flip & Listen</button>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button class="btn btn-sm btn-flashcard" style="flex: 1;">Flip & Listen</button>
+                    <button class="btn btn-sm btn-mic" title="Test Pronunciation" style="background: var(--color-n4);">🎤</button>
+                </div>
             `;
             
             // Re-bind flip and audio logic for dynamically generated flashcards
@@ -467,6 +509,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 li.classList.toggle('flipped');
                 flipBtn.textContent = isCurrentlyFlipped ? 'Flip & Listen' : 'Unflip';
+            });
+
+            const micBtn = li.querySelector('.btn-mic');
+            micBtn.addEventListener('click', (e) => {
+                testPronunciation(v.jp, micBtn);
             });
             
             activeLessonVocab.appendChild(li);

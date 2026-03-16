@@ -17,11 +17,11 @@
     <div id="login-screen" class="login-overlay">
         <div class="login-modal">
             <span class="icon">🌸</span>
-            <h2>Welcome, Scholars.</h2>
-            <p>Select your profile. Time left until MEXT 2027: Limited.</p>
+            <h2>Welcome to the Global Dojo.</h2>
+            <p>Enter your given name to begin your MEXT 2027 journey. The world is watching.</p>
             <div class="login-options">
-                <button class="btn btn-primary" id="login-shreyas">I am Shreyas</button>
-                <button class="btn btn-secondary" id="login-dushyant">I am Dushyant</button>
+                <input type="text" id="login-username" placeholder="Enter your name (e.g., Shreyas)" class="form-input" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; width: 100%; margin-bottom: 1rem; background: var(--bg-primary); color: var(--text-primary);">
+                <button class="btn btn-primary w-100" id="login-submit">Enter Dojo</button>
             </div>
             <p class="login-warning">Note: Only full dedication will result in N3 mastery. There is no room for excuses.</p>
         </div>
@@ -116,16 +116,19 @@
                             <button class="btn btn-primary start-lesson-btn">Start Lesson</button>
                         </div>
 
-                        <!-- Quick Friend Comparison -->
+                        <!-- Global Rank Quick View -->
                         <div class="card friend-card">
-                            <h3>Me vs Friend</h3>
-                            <div class="battle-bar-container">
-                                <div class="battle-bar">
-                                    <div class="battle-fill me" style="width: 55%;">Shrey (55%)</div>
-                                    <div class="battle-fill friend" style="width: 45%;">Friend (45%)</div>
+                            <h3>My Global Rank</h3>
+                            <div class="battle-bar-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                                <div style="font-size: 2.5rem; font-weight: bold; color: var(--color-n3);">
+                                    <span id="my-global-rank">#--</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div class="text-secondary">Total XP</div>
+                                    <div style="font-size: 1.5rem; font-weight: bold;" id="my-total-xp">0</div>
                                 </div>
                             </div>
-                            <p class="battle-status">You are slightly ahead in JLPT N5 Vocabulary!</p>
+                            <p class="battle-status" id="rank-status-message" style="margin-top: 10px;">Climb the ranks to prove your mastery!</p>
                         </div>
 
                         <!-- Daily Quiz Quick Action -->
@@ -188,11 +191,24 @@
                             </div>
                         </div>
 
-                        <!-- Me vs Friend Comparison Chart -->
-                        <div class="card comparison-card">
-                            <h3>Accuracy Comparison</h3>
-                            <div class="chart-container" style="height: 250px;">
-                                <canvas id="comparisonChart"></canvas>
+                        <!-- Global Leaderboard -->
+                        <div class="card comparison-card" id="leaderboard-card">
+                            <h3>Global Leaderboard (Top Scholars)</h3>
+                            <div class="leaderboard-container" style="max-height: 250px; overflow-y: auto;">
+                                <table class="leaderboard-table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                                    <thead style="position: sticky; top: 0; background: var(--bg-secondary); z-index: 1;">
+                                        <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                                            <th style="padding: 8px; color: var(--text-secondary);">Rank</th>
+                                            <th style="padding: 8px; color: var(--text-secondary);">Scholar</th>
+                                            <th style="padding: 8px; color: var(--text-secondary);">Level</th>
+                                            <th style="padding: 8px; color: var(--text-secondary);">XP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="leaderboard-body">
+                                        <!-- JS will populate leaderboard here -->
+                                        <tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--text-secondary);">Loading global ranking...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         

@@ -17,12 +17,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. Insert default profiles if they don't exist
-INSERT INTO public.profiles (id, name, xp, current_lesson)
-VALUES 
-    ('shreyas', 'Shreyas', 0, 1),
-    ('dushyant', 'Dushyant', 0, 1)
-ON CONFLICT (id) DO NOTHING;
+-- 2. No default profiles inserted.
+-- The app will dynamically create profiles when users enter their given name.
 
 -- 3. Enabling Row Level Security (RLS)
 -- For a learning project, we can allow public access for simplicity, 

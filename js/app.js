@@ -825,48 +825,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // Pre-calculate to populate charts (but they aren't visible yet)
     // Wait for the chart container to have width before rendering (ChartJS quirk on display:none)
     // Instead, rendering happens when user clicks the Progress tab.
-    // 12. Custom Animated Cursor Logic
-    const cursorDot = document.getElementById('cursor-dot');
-    const cursorOutline = document.getElementById('cursor-outline');
+    // 12. Premium Liquid Cursor Logic
+    const cursorGlider = document.getElementById('cursor-glider');
 
     let mouseX = 0;
     let mouseY = 0;
-    let outlineX = 0;
-    let outlineY = 0;
+    let gliderX = 0;
+    let gliderY = 0;
+    let isHovering = false;
 
     window.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
-
-        // Instant move for dot
-        cursorDot.style.left = `${mouseX}px`;
-        cursorDot.style.top = `${mouseY}px`;
     });
 
     function animateCursor() {
-        // Smooth follow for outline (lerp)
-        outlineX += (mouseX - outlineX) * 0.15;
-        outlineY += (mouseY - outlineY) * 0.15;
+        // High-end smooth lerp
+        gliderX += (mouseX - gliderX) * 0.12;
+        gliderY += (mouseY - gliderY) * 0.12;
 
-        cursorOutline.style.left = `${outlineX}px`;
-        cursorOutline.style.top = `${outlineY}px`;
+        cursorGlider.style.left = `${gliderX}px`;
+        cursorGlider.style.top = `${gliderY}px`;
 
         requestAnimationFrame(animateCursor);
     }
     animateCursor();
 
-    // Hover effects for cursor
-    const hoverables = 'a, button, .nav-item, .card, .clickable, .profile-switcher';
+    // Hover effects for glider
+    const hoverables = 'a, button, .nav-item, .card, .clickable, .profile-switcher, .vocab-item';
     document.addEventListener('mouseover', (e) => {
         if (e.target.closest(hoverables)) {
-            cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.5)';
-            cursorOutline.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+            cursorGlider.classList.add('active');
         }
     });
     document.addEventListener('mouseout', (e) => {
         if (e.target.closest(hoverables)) {
-            cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
-            cursorOutline.style.backgroundColor = 'transparent';
+            cursorGlider.classList.remove('active');
         }
     });
 
@@ -901,137 +895,6 @@ document.addEventListener('DOMContentLoaded', () => {
         lessonBrowser.classList.remove('hidden');
         showSenseiMessage('You abandoned the hurdle. Sensei is disappointed.', 'warning');
     });
-
-    // 14. "Chibi Sensei" Pet Sprite Manager
-    class ChibiPetManager {
-        constructor() {
-            this.pets = [];
-            this.petTypes = [
-                { id: 'dog', emoji: '🐶', img: 'img/chibi_dog.png' },
-                { id: 'cat', emoji: '🐱', img: 'img/chibi_cat.png' }
-            ];
-            this.spawnInterval = 30000; // Spawn every 30 seconds
-            this.start();
-        }
-
-        start() {
-            // Initial spawn
-            setTimeout(() => this.spawnPet(), 5000);
-            setInterval(() => this.spawnPet(), this.spawnInterval);
-        }
-
-        spawnPet() {
-            const type = this.petTypes[Math.floor(Math.random() * this.petTypes.length)];
-            const petEl = document.createElement('div');
-            petEl.className = 'chibi-pet';
-            
-            // Set emoji as fallback
-            petEl.textContent = type.emoji;
-
-            // Try to use image
-            const img = new Image();
-            img.src = type.img;
-            img.onload = () => {
-                petEl.style.backgroundImage = `url('${type.img}')`;
-                petEl.textContent = ''; // Clear emoji if image loads successfully
-            };
-            
-            // Random start position (top, bottom, left, or right)
-            const side = Math.floor(Math.random() * 4);
-            let x, y, dx, dy;
-
-            switch(side) {
-                case 0: // Top
-                    x = Math.random() * window.innerWidth;
-                    y = -50;
-                    dx = (Math.random() - 0.5) * 2;
-                    dy = Math.random() * 2 + 1;
-                    break;
-                case 1: // Right
-                    x = window.innerWidth + 50;
-                    y = Math.random() * window.innerHeight;
-                    dx = -(Math.random() * 2 + 1);
-                    dy = (Math.random() - 0.5) * 2;
-                    break;
-                case 2: // Bottom
-                    x = Math.random() * window.innerWidth;
-                    y = window.innerHeight + 50;
-                    dx = (Math.random() - 0.5) * 2;
-                    dy = -(Math.random() * 2 + 1);
-                    break;
-                case 3: // Left
-                    x = -50;
-                    y = Math.random() * window.innerHeight;
-                    dx = Math.random() * 2 + 1;
-                    dy = (Math.random() - 0.5) * 2;
-                    break;
-            }
-
-            petEl.style.left = `${x}px`;
-            petEl.style.top = `${y}px`;
-            document.body.appendChild(petEl);
-
-            const pet = { el: petEl, x, y, dx, dy, active: true, behavior: 'walking' };
-            this.pets.push(pet);
-
-            petEl.addEventListener('click', () => this.interactWithPet(pet));
-
-            this.animatePet(pet);
-        }
-
-        interactWithPet(pet) {
-            if (!pet.active) return;
-            
-            const rand = Math.random();
-            if (rand < 0.4) {
-                // Act Cute
-                pet.behavior = 'cute';
-                pet.el.classList.add('acting-cute');
-                showSenseiMessage(`${pet.el.textContent || 'Pet'} is acting cute! ✨`, 'info');
-                setTimeout(() => {
-                    if (pet.active) {
-                        pet.el.classList.remove('acting-cute');
-                        pet.behavior = 'walking';
-                    }
-                }, 3000);
-            } else {
-                // Run Away
-                pet.behavior = 'running';
-                pet.el.classList.add('running-away');
-                pet.active = false;
-                pet.dx *= 5; // Speed up
-                pet.dy *= 5;
-                showSenseiMessage(`${pet.el.textContent || 'Pet'} got shy and ran away! 💨`, 'info');
-                setTimeout(() => pet.el.remove(), 500);
-            }
-        }
-
-        animatePet(pet) {
-            if (!pet.active && pet.behavior !== 'running') return;
-
-            if (pet.behavior === 'walking' || pet.behavior === 'running') {
-                pet.x += pet.dx;
-                pet.y += pet.dy;
-                pet.el.style.left = `${pet.x}px`;
-                pet.el.style.top = `${pet.y}px`;
-
-                // Flip based on direction
-                if (pet.dx > 0) pet.el.style.transform = 'scaleX(-1)';
-                else pet.el.style.transform = 'scaleX(1)';
-            }
-
-            // Remove if off-screen
-            if (pet.x < -100 || pet.x > window.innerWidth + 100 || pet.y < -100 || pet.y > window.innerHeight + 100) {
-                pet.active = false;
-                pet.el.remove();
-                return;
-            }
-
-            requestAnimationFrame(() => this.animatePet(pet));
-        }
-    }
-
-    new ChibiPetManager();
 
 });
 
